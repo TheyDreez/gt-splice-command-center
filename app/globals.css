@@ -7,18 +7,6 @@
 }
 
 body {
-  background-color: #090A0F;
-  color: #F1F5F9;
-}
-
-/* Native modal dialog scroll containment per modern-web-guidance */
-dialog:modal {
-  overscroll-behavior: contain;
-}
-
-dialog::backdrop {
-  overflow: hidden;
-  overscroll-behavior: contain;
-  background-color: rgba(0, 0, 0, 0.75);
-  backdrop-filter: blur(4px);
+  background-color: #0a0a0a;
+  color: #e5e5e5;
 }

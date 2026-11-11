@@ -1,7 +1,7 @@
 import { ProjectState } from '@/types/project';
 import { INITIAL_PROJECT_STATE } from './seed-data';
 
-const STORAGE_KEY = 'gt_splice_command_center_v3';
+const STORAGE_KEY = 'gt_splice_workspace_v4';
 
 export function loadProjectState(): ProjectState {
   if (typeof window === 'undefined') return INITIAL_PROJECT_STATE;
@@ -12,8 +12,7 @@ export function loadProjectState(): ProjectState {
       return INITIAL_PROJECT_STATE;
     }
     return JSON.parse(raw) as ProjectState;
-  } catch (err) {
-    console.error('Erro ao carregar estado local:', err);
+  } catch {
     return INITIAL_PROJECT_STATE;
   }
 }
@@ -26,7 +25,6 @@ export async function saveProjectState(state: ProjectState): Promise<void> {
   };
   window.localStorage.setItem(STORAGE_KEY, JSON.stringify(updated));
 
-  // Gancho opcional para sincronização gratuita no Firebase / Supabase via variável de ambiente
   const syncEndpoint = process.env.NEXT_PUBLIC_FIREBASE_SYNC_URL;
   if (syncEndpoint) {
     try {
@@ -35,8 +33,8 @@ export async function saveProjectState(state: ProjectState): Promise<void> {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(updated)
       });
-    } catch (e) {
-      console.warn('Falha ao sincronizar com nuvem (mantido em localStorage):', e);
+    } catch {
+      // Mantem salvo localmente
     }
   }
 }
@@ -52,13 +50,13 @@ export function exportStateAsJson(state: ProjectState): void {
   const dataStr =
     'data:text/json;charset=utf-8,' +
     encodeURIComponent(JSON.stringify(state, null, 2));
-  const downloadAnchor = document.createElement('a');
-  downloadAnchor.setAttribute('href', dataStr);
-  downloadAnchor.setAttribute(
+  const a = document.createElement('a');
+  a.setAttribute('href', dataStr);
+  a.setAttribute(
     'download',
-    `gt_splice_plano_trabalho_${new Date().toISOString().slice(0, 10)}.json`
+    `gt_splice_workspace_${new Date().toISOString().slice(0, 10)}.json`
   );
-  document.body.appendChild(downloadAnchor);
-  downloadAnchor.click();
-  downloadAnchor.remove();
+  document.body.appendChild(a);
+  a.click();
+  a.remove();
 }

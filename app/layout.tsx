@@ -2,9 +2,9 @@ import type { Metadata } from 'next';
 import './globals.css';
 
 export const metadata: Metadata = {
-  title: 'GT_Splice Command Center | Residência TIC 51 (Facens & Splice)',
+  title: 'GT_Splice Facens: Workspace',
   description:
-    'Plano de Trabalho Vivo, Gestão Kanban, Inventário SIGABEM/Unity e Otimização 3D em Realidade Mista do grupo GT_Splice Facens.',
+    'Repositório de estudo, metas oficiais e plano de trabalho do grupo GT_Splice Facens (Residência TIC 51).',
 };
 
 export default function RootLayout({
@@ -14,7 +14,7 @@ export default function RootLayout({
 }) {
   return (
     <html lang="pt-BR" className="dark">
-      <body className="antialiased selection:bg-cyan-500/30 selection:text-cyan-200">
+      <body className="antialiased selection:bg-neutral-800 selection:text-neutral-100">
         {children}
       </body>
     </html>
