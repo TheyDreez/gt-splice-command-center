@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect, useRef } from 'react';
 import {
-  Target,
+  Radar,
   Kanban,
   BookOpen,
   Users,
@@ -11,22 +11,20 @@ import {
   RotateCcw,
   Plus,
   CheckCircle2,
-  Circle,
   ExternalLink,
+  ShieldCheck,
   Trash2,
   List,
   Columns3,
   Edit3,
+  Calendar,
   Check,
+  Target,
   Search,
-  ArrowUpRight,
-  FolderGit2,
-  FileText,
-  Presentation,
-  Cpu,
-  MessageSquare,
-  Building2,
-  Sparkles
+  Video,
+  Radio,
+  Route,
+  Building2
 } from 'lucide-react';
 import {
   ProjectState,
@@ -43,105 +41,71 @@ import {
   exportStateAsJson
 } from '@/lib/storage';
 
-type ActiveTab = 'METAS' | 'KANBAN' | 'ESTUDO' | 'EQUIPE';
+type ActiveTab = 'DASHBOARD' | 'KANBAN' | 'MATERIAIS' | 'EQUIPE';
 
-const STATUS_META: Record<
+const STATUS_CONFIG: Record<
   TaskStatus,
-  { label: string; dot: string; badge: string; border: string }
+  { label: string; badgeClass: string; borderHover: string }
 > = {
   PENDENTE: {
-    label: 'Pendente',
-    dot: 'bg-zinc-400',
-    badge: 'bg-zinc-800/90 text-zinc-300 border-zinc-700',
-    border: 'hover:border-zinc-600'
+    label: 'Backlog / Pendente',
+    badgeClass: 'bg-[#132038] text-slate-300 border-[#23385E]',
+    borderHover: 'hover:border-slate-500/60'
   },
   VALIDACAO: {
-    label: 'Validação (Fred / Grupo)',
-    dot: 'bg-amber-400',
-    badge: 'bg-amber-950/60 text-amber-300 border-amber-800/60',
-    border: 'hover:border-amber-700/60'
+    label: 'Validação (Prof. Fred / Grupo)',
+    badgeClass: 'bg-amber-950/60 text-amber-300 border-amber-700/60',
+    borderHover: 'hover:border-amber-500/50'
   },
   EM_ANDAMENTO: {
     label: 'Em Execução',
-    dot: 'bg-indigo-400',
-    badge: 'bg-indigo-950/60 text-indigo-300 border-indigo-800/60',
-    border: 'hover:border-indigo-700/60'
+    badgeClass: 'bg-[#004B8D]/40 text-sky-300 border-[#0066CC]/60',
+    borderHover: 'hover:border-sky-500/50'
   },
   CONCLUIDO: {
     label: 'Concluído',
-    dot: 'bg-emerald-400',
-    badge: 'bg-emerald-950/60 text-emerald-300 border-emerald-800/60',
-    border: 'hover:border-emerald-700/60'
+    badgeClass: 'bg-[#00A859]/25 text-emerald-300 border-[#00A859]/60',
+    borderHover: 'hover:border-emerald-500/50'
   }
 };
 
-const CATEGORY_META: Record<
-  StudyMaterial['category'],
-  { label: string; badge: string; icon: React.ComponentType<{ className?: string }> }
-> = {
-  ATA: {
-    label: 'Ata / Kickoff',
-    badge: 'bg-amber-950/60 text-amber-300 border-amber-800/50',
-    icon: MessageSquare
-  },
-  APRESENTACAO: {
-    label: 'Apresentação / PDF',
-    badge: 'bg-indigo-950/60 text-indigo-300 border-indigo-800/50',
-    icon: Presentation
-  },
-  DOSSIE: {
-    label: 'Dossiê Técnico',
-    badge: 'bg-emerald-950/60 text-emerald-300 border-emerald-800/50',
-    icon: FileText
-  },
-  REPOSITORIO: {
-    label: 'Repositório GitHub',
-    badge: 'bg-sky-950/60 text-sky-300 border-sky-800/50',
-    icon: FolderGit2
-  },
-  HARDWARE: {
-    label: 'Hardware / Óptica',
-    badge: 'bg-purple-950/60 text-purple-300 border-purple-800/50',
-    icon: Cpu
-  }
-};
-
-export default function GTSpliceWorkspace() {
+export default function GTSpliceCommandCenter() {
   const [state, setState] = useState<ProjectState>(INITIAL_PROJECT_STATE);
   const [mounted, setMounted] = useState(false);
-  const [activeTab, setActiveTab] = useState<ActiveTab>('METAS');
+  const [activeTab, setActiveTab] = useState<ActiveTab>('DASHBOARD');
 
-  // Filtros do Kanban
-  const [viewMode, setViewMode] = useState<'BOARD' | 'LIST'>('BOARD');
-  const [searchQuery, setSearchQuery] = useState('');
-  const [selectedAssignee, setSelectedAssignee] = useState('ALL');
+  // Filtros e Visão do Kanban
+  const [kanbanViewMode, setKanbanViewMode] = useState<'BOARD' | 'LIST'>('BOARD');
+  const [selectedStage, setSelectedStage] = useState<string>('ALL');
+  const [selectedAssignee, setSelectedAssignee] = useState<string>('ALL');
+  const [searchQuery, setSearchQuery] = useState<string>('');
   const [draggedTaskId, setDraggedTaskId] = useState<string | null>(null);
 
-  // Modal de Tarefa (<dialog>)
+  // Modal de Criar / Editar Tarefa (<dialog>)
   const taskDialogRef = useRef<HTMLDialogElement | null>(null);
   const [editingTaskId, setEditingTaskId] = useState<string | null>(null);
   const [taskTitle, setTaskTitle] = useState('');
-  const [taskStage, setTaskStage] = useState('Entrega 1 (Janeiro)');
-  const [taskAssignee, setTaskAssignee] = useState('Em aberto');
+  const [taskStage, setTaskStage] = useState('Entrega 1: Janeiro (MR Browser)');
+  const [taskAssignee, setTaskAssignee] = useState('A definir pelo grupo');
   const [taskStatus, setTaskStatus] = useState<TaskStatus>('PENDENTE');
   const [taskNotes, setTaskNotes] = useState('');
 
   // Modal de Material de Estudo (<dialog>)
-  const matDialogRef = useRef<HTMLDialogElement | null>(null);
+  const materialDialogRef = useRef<HTMLDialogElement | null>(null);
   const [matTitle, setMatTitle] = useState('');
-  const [matCategory, setMatCategory] = useState<StudyMaterial['category']>('DOSSIE');
-  const [matType, setMatType] = useState('Documento / Link');
-  const [matSharedBy, setMatSharedBy] = useState('');
-  const [matUrl, setMatUrl] = useState('');
+  const [matType, setMatType] = useState('Documento Técnico');
+  const [matSharedBy, setMatSharedBy] = useState('Equipe GT_Splice');
+  const [matRefOrUrl, setMatRefOrUrl] = useState('');
   const [matNotes, setMatNotes] = useState('');
 
-  // Edição inline de integrante
+  // Edição inline dos membros da equipe
   const [editingMemberId, setEditingMemberId] = useState<string | null>(null);
 
   const fileInputRef = useRef<HTMLInputElement | null>(null);
 
   useEffect(() => {
-    setState(loadProjectState());
+    const loaded = loadProjectState();
+    setState(loaded);
     setMounted(true);
   }, []);
 
@@ -153,47 +117,12 @@ export default function GTSpliceWorkspace() {
     });
   };
 
-  // Alternar check de item nas Metas Oficiais
-  const handleToggleGoalItem = (groupId: string, itemId: string) => {
-    updateState((prev) => ({
-      ...prev,
-      goals: prev.goals.map((g) =>
-        g.id === groupId
-          ? {
-              ...g,
-              items: g.items.map((it) =>
-                it.id === itemId ? { ...it, completed: !it.completed } : it
-              )
-            }
-          : g
-      )
-    }));
-  };
-
-  // Transformar uma Meta Oficial em Tarefa no Kanban com 1 clique
-  const handleConvertGoalToTask = (goalText: string, groupTitle: string) => {
-    const newTask: ProjectTask = {
-      id: `task-${Date.now()}-${Math.random().toString(36).slice(2, 6)}`,
-      title: goalText,
-      stage: groupTitle,
-      assignee: 'Em aberto',
-      status: 'PENDENTE',
-      notes: 'Criada a partir das Metas Oficiais do Kickoff.',
-      createdAt: new Date().toISOString()
-    };
-    updateState((prev) => ({
-      ...prev,
-      tasks: [newTask, ...prev.tasks]
-    }));
-    setActiveTab('KANBAN');
-  };
-
-  // Modal de Tarefas
+  // Ações de Tarefas
   const openCreateTaskModal = (defaultStatus: TaskStatus = 'PENDENTE') => {
     setEditingTaskId(null);
     setTaskTitle('');
-    setTaskStage('Entrega 1 (Janeiro)');
-    setTaskAssignee('Em aberto');
+    setTaskStage('Entrega 1: Janeiro (MR Browser)');
+    setTaskAssignee('A definir pelo grupo');
     setTaskStatus(defaultStatus);
     setTaskNotes('');
     taskDialogRef.current?.showModal();
@@ -209,6 +138,10 @@ export default function GTSpliceWorkspace() {
     taskDialogRef.current?.showModal();
   };
 
+  const closeTaskModal = () => {
+    taskDialogRef.current?.close();
+  };
+
   const handleSaveTask = (e: React.FormEvent) => {
     e.preventDefault();
     if (!taskTitle.trim()) return;
@@ -221,8 +154,8 @@ export default function GTSpliceWorkspace() {
             ? {
                 ...t,
                 title: taskTitle.trim(),
-                stage: taskStage.trim() || 'Geral',
-                assignee: taskAssignee.trim() || 'Em aberto',
+                stage: taskStage.trim(),
+                assignee: taskAssignee,
                 status: taskStatus,
                 notes: taskNotes.trim()
               }
@@ -230,83 +163,116 @@ export default function GTSpliceWorkspace() {
         )
       }));
     } else {
-      const created: ProjectTask = {
-        id: `task-${Date.now()}`,
+      const newTask: ProjectTask = {
+        id: `t-${Date.now()}`,
         title: taskTitle.trim(),
-        stage: taskStage.trim() || 'Geral',
-        assignee: taskAssignee.trim() || 'Em aberto',
+        stage: taskStage.trim(),
+        assignee: taskAssignee,
         status: taskStatus,
-        notes: taskNotes.trim(),
-        createdAt: new Date().toISOString()
+        notes: taskNotes.trim()
       };
       updateState((prev) => ({
         ...prev,
-        tasks: [created, ...prev.tasks]
+        tasks: [newTask, ...prev.tasks]
       }));
     }
-    taskDialogRef.current?.close();
+
+    setEditingTaskId(null);
+    closeTaskModal();
   };
 
-  const handleUpdateTask = (id: string, patch: Partial<ProjectTask>) => {
+  const handlePromoteGoalToTask = (itemText: string, groupTitle: string) => {
+    const newTask: ProjectTask = {
+      id: `t-${Date.now()}-${Math.random().toString(36).slice(2, 5)}`,
+      title: itemText,
+      stage: groupTitle,
+      assignee: 'A definir pelo grupo',
+      status: 'PENDENTE',
+      notes: 'Meta oficial adicionada ao quadro pelo grupo.'
+    };
     updateState((prev) => ({
       ...prev,
-      tasks: prev.tasks.map((t) => (t.id === id ? { ...t, ...patch } : t))
+      tasks: [newTask, ...prev.tasks]
+    }));
+    setActiveTab('KANBAN');
+  };
+
+  const handleTaskStatusChange = (taskId: string, newStatus: TaskStatus) => {
+    updateState((prev) => ({
+      ...prev,
+      tasks: prev.tasks.map((t) => (t.id === taskId ? { ...t, status: newStatus } : t))
     }));
   };
 
-  const handleDeleteTask = (id: string) => {
+  const handleTaskAssigneeChange = (taskId: string, newAssignee: string) => {
     updateState((prev) => ({
       ...prev,
-      tasks: prev.tasks.filter((t) => t.id !== id)
+      tasks: prev.tasks.map((t) => (t.id === taskId ? { ...t, assignee: newAssignee } : t))
     }));
   };
 
-  // Materiais de Estudo
+  const handleDeleteTask = (taskId: string) => {
+    updateState((prev) => ({
+      ...prev,
+      tasks: prev.tasks.filter((t) => t.id !== taskId)
+    }));
+  };
+
+  // Ações de Materiais de Estudo
   const handleSaveMaterial = (e: React.FormEvent) => {
     e.preventDefault();
     if (!matTitle.trim()) return;
-    const created: StudyMaterial = {
+    const newMat: StudyMaterial = {
       id: `mat-${Date.now()}`,
       title: matTitle.trim(),
-      category: matCategory,
-      type: matType.trim() || 'Referência',
-      sharedBy: matSharedBy.trim() || 'Equipe GT_Splice',
-      referenceOrUrl: matUrl.trim() || '-',
+      type: matType.trim(),
+      sharedBy: matSharedBy,
+      referenceOrUrl: matRefOrUrl.trim() || 'Referência compartilhada no grupo',
       notes: matNotes.trim()
     };
     updateState((prev) => ({
       ...prev,
-      materials: [...prev.materials, created]
+      materials: [...prev.materials, newMat]
     }));
     setMatTitle('');
-    setMatUrl('');
+    setMatType('Documento Técnico');
+    setMatSharedBy('Equipe GT_Splice');
+    setMatRefOrUrl('');
     setMatNotes('');
-    matDialogRef.current?.close();
+    materialDialogRef.current?.close();
   };
 
-  const handleDeleteMaterial = (id: string) => {
+  const handleMaterialSharedByChange = (matId: string, sharedBy: string) => {
     updateState((prev) => ({
       ...prev,
-      materials: prev.materials.filter((m) => m.id !== id)
+      materials: prev.materials.map((m) => (m.id === matId ? { ...m, sharedBy } : m))
     }));
   };
 
-  // Equipe
-  const handleUpdateMember = (id: string, patch: Partial<TeamMember>) => {
+  const handleDeleteMaterial = (matId: string) => {
     updateState((prev) => ({
       ...prev,
-      team: prev.team.map((m) => (m.id === id ? { ...m, ...patch } : m))
+      materials: prev.materials.filter((m) => m.id !== matId)
     }));
   };
 
+  // Ações de Equipe (Edição Inline)
+  const handleUpdateMember = (id: string, updates: Partial<TeamMember>) => {
+    updateState((prev) => ({
+      ...prev,
+      team: prev.team.map((m) => (m.id === id ? { ...m, ...updates } : m))
+    }));
+  };
+
+  // Importação JSON
   const handleImportJson = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
     const reader = new FileReader();
-    reader.onload = (ev) => {
+    reader.onload = (event) => {
       try {
-        const parsed = JSON.parse(String(ev.target?.result)) as ProjectState;
-        if (parsed.goals && parsed.materials) {
+        const parsed = JSON.parse(String(event.target?.result)) as ProjectState;
+        if (parsed.tasks && parsed.team && parsed.goals) {
           setState(parsed);
           saveProjectState(parsed);
         }
@@ -319,102 +285,89 @@ export default function GTSpliceWorkspace() {
 
   if (!mounted) {
     return (
-      <div className="min-h-screen bg-[#09090b] text-zinc-400 flex items-center justify-center text-sm font-mono">
-        Carregando workspace GT_Splice...
+      <div className="min-h-screen bg-[#070D17] text-slate-200 flex items-center justify-center">
+        <div className="animate-pulse text-[#00A859] font-mono text-sm">
+          Inicializando GT_Splice • Sistema Integrado de Projeto...
+        </div>
       </div>
     );
   }
 
-  // Métricas das Metas Oficiais e Tarefas
-  const allGoalItems = state.goals.flatMap((g) => g.items);
-  const completedGoalItems = allGoalItems.filter((i) => i.completed).length;
-  const goalsProgress =
-    allGoalItems.length > 0
-      ? Math.round((completedGoalItems / allGoalItems.length) * 100)
-      : 0;
-
+  // Métricas
   const totalTasks = state.tasks.length;
   const completedTasks = state.tasks.filter((t) => t.status === 'CONCLUIDO').length;
-
-  const filteredTasks = state.tasks.filter((t) => {
-    const matchAssignee =
-      selectedAssignee === 'ALL' ||
-      t.assignee.toLowerCase().includes(selectedAssignee.toLowerCase());
-    const matchQuery =
-      !searchQuery.trim() ||
-      t.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      t.stage.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      t.notes.toLowerCase().includes(searchQuery.toLowerCase());
-    return matchAssignee && matchQuery;
-  });
+  const overallProgress = totalTasks > 0 ? Math.round((completedTasks / totalTasks) * 100) : 0;
 
   const sortedTeam = [...state.team].sort((a, b) =>
     a.name.localeCompare(b.name, 'pt-BR')
   );
 
+  const availableStages = Array.from(new Set(state.tasks.map((t) => t.stage)));
+
+  const filteredTasks = state.tasks.filter((task) => {
+    const matchStage = selectedStage === 'ALL' || task.stage === selectedStage;
+    const matchAssignee =
+      selectedAssignee === 'ALL' ||
+      task.assignee.toLowerCase().includes(selectedAssignee.toLowerCase());
+    const matchQuery =
+      searchQuery.trim() === '' ||
+      task.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      task.notes.toLowerCase().includes(searchQuery.toLowerCase());
+    return matchStage && matchAssignee && matchQuery;
+  });
+
   return (
-    <div className="min-h-screen bg-[#09090b] text-zinc-100 flex flex-col lg:flex-row">
-      {/* SIDEBAR EXECUTIVA ESTILO LINEAR / VERCEL */}
-      <aside className="w-full lg:w-64 bg-[#0e0e11] border-b lg:border-b-0 lg:border-r border-zinc-800/80 flex flex-col justify-between p-4 shrink-0">
-        <div className="space-y-6">
-          {/* IDENTIDADE DO GRUPO */}
-          <div className="flex items-center gap-3 px-2 pt-1">
-            <div className="w-9 h-9 rounded-lg bg-zinc-100 text-zinc-950 flex items-center justify-center font-bold text-sm tracking-tight shadow-sm">
-              GT
+    <div className="min-h-screen bg-[#070D17] text-slate-100 flex flex-col md:flex-row font-sans">
+      {/* SIDEBAR : IDENTIDADE VISUAL SPLICE SMART SOLUTIONS (AZUL CCO #004B8D + VERDE SIIS #00A859) */}
+      <aside className="w-full md:w-72 bg-[#0C1524] border-b md:border-b-0 md:border-r border-[#1B2B48] flex flex-col justify-between p-5 shrink-0">
+        <div>
+          <div className="flex items-center gap-3 mb-6">
+            <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-[#004B8D] to-[#00A859] flex items-center justify-center shadow-lg shadow-[#004B8D]/25 border border-white/10">
+              <Radar className="w-5 h-5 text-white"/>
             </div>
-            <div className="min-w-0">
-              <div className="flex items-center gap-1.5">
-                <h1 className="text-sm font-semibold text-zinc-100 truncate">
-                  GT_Splice Facens
-                </h1>
-                <span className="text-[10px] font-mono px-1.5 py-0.5 rounded bg-zinc-800 text-zinc-300 border border-zinc-700">
-                  TIC 51
-                </span>
-              </div>
-              <p className="text-[11px] text-zinc-400 truncate">
-                Campus em Realidade Mista
-              </p>
+            <div>
+              <span className="text-[10px] font-mono uppercase tracking-widest text-[#00A859] font-semibold block">
+                SPLICE • FACENS TIC 51
+              </span>
+              <h1 className="text-base font-bold tracking-tight text-white">
+                GT_Splice CCO
+              </h1>
             </div>
           </div>
 
-          {/* NAVEGAÇÃO PRINCIPAL */}
-          <nav className="space-y-1">
-            <div className="px-2 pb-1 text-[10px] font-mono uppercase tracking-wider text-zinc-500">
-              Workspace
-            </div>
-
+          <nav className="space-y-1.5">
             <button
               type="button"
-              onClick={() => setActiveTab('METAS')}
-              className={`w-full flex items-center justify-between px-3 py-2 rounded-lg text-xs font-medium transition ${
-                activeTab === 'METAS'
-                  ? 'bg-zinc-800/90 text-white border border-zinc-700/70'
-                  : 'text-zinc-400 hover:bg-zinc-900 hover:text-zinc-200'
+              onClick={() => setActiveTab('DASHBOARD')}
+              className={`w-full flex items-center justify-between px-3.5 py-2.5 rounded-xl text-sm font-medium transition ${
+                activeTab === 'DASHBOARD'
+                  ? 'bg-[#004B8D]/30 text-white border border-[#0066CC]/50 shadow-sm'
+                  : 'text-slate-400 hover:bg-[#111D32] hover:text-slate-200'
               }`}
             >
-              <span className="flex items-center gap-2.5">
-                <Target className="w-4 h-4 text-indigo-400" />
+              <span className="flex items-center gap-3">
+                <Target className="w-4 h-4 text-[#00A859]"/>
                 Metas Oficiais (Kickoff)
               </span>
-              <span className="text-[11px] font-mono text-zinc-400">
-                {completedGoalItems}/{allGoalItems.length}
+              <span className="text-[11px] font-mono px-2 py-0.5 rounded-full bg-[#132038] text-sky-300 border border-[#1E3256]">
+                4 blocos
               </span>
             </button>
 
             <button
               type="button"
-              onClick={() => setActiveTab('ESTUDO')}
-              className={`w-full flex items-center justify-between px-3 py-2 rounded-lg text-xs font-medium transition ${
-                activeTab === 'ESTUDO'
-                  ? 'bg-zinc-800/90 text-white border border-zinc-700/70'
-                  : 'text-zinc-400 hover:bg-zinc-900 hover:text-zinc-200'
+              onClick={() => setActiveTab('MATERIAIS')}
+              className={`w-full flex items-center justify-between px-3.5 py-2.5 rounded-xl text-sm font-medium transition ${
+                activeTab === 'MATERIAIS'
+                  ? 'bg-[#004B8D]/30 text-white border border-[#0066CC]/50 shadow-sm'
+                  : 'text-slate-400 hover:bg-[#111D32] hover:text-slate-200'
               }`}
             >
-              <span className="flex items-center gap-2.5">
-                <BookOpen className="w-4 h-4 text-emerald-400" />
-                Acervo & Estudo
+              <span className="flex items-center gap-3">
+                <BookOpen className="w-4 h-4 text-sky-400"/>
+                Materiais de Estudo
               </span>
-              <span className="text-[11px] font-mono text-zinc-400">
+              <span className="text-[11px] font-mono px-2 py-0.5 rounded-full bg-[#132038] text-slate-300 border border-[#1E3256]">
                 {state.materials.length}
               </span>
             </button>
@@ -422,17 +375,17 @@ export default function GTSpliceWorkspace() {
             <button
               type="button"
               onClick={() => setActiveTab('KANBAN')}
-              className={`w-full flex items-center justify-between px-3 py-2 rounded-lg text-xs font-medium transition ${
+              className={`w-full flex items-center justify-between px-3.5 py-2.5 rounded-xl text-sm font-medium transition ${
                 activeTab === 'KANBAN'
-                  ? 'bg-zinc-800/90 text-white border border-zinc-700/70'
-                  : 'text-zinc-400 hover:bg-zinc-900 hover:text-zinc-200'
+                  ? 'bg-[#004B8D]/30 text-white border border-[#0066CC]/50 shadow-sm'
+                  : 'text-slate-400 hover:bg-[#111D32] hover:text-slate-200'
               }`}
             >
-              <span className="flex items-center gap-2.5">
-                <Kanban className="w-4 h-4 text-sky-400" />
+              <span className="flex items-center gap-3">
+                <Kanban className="w-4 h-4 text-amber-400"/>
                 Plano de Trabalho
               </span>
-              <span className="text-[11px] font-mono text-zinc-400">
+              <span className="text-[11px] font-mono px-2 py-0.5 rounded-full bg-[#132038] text-slate-300 border border-[#1E3256]">
                 {completedTasks}/{totalTasks}
               </span>
             </button>
@@ -440,53 +393,57 @@ export default function GTSpliceWorkspace() {
             <button
               type="button"
               onClick={() => setActiveTab('EQUIPE')}
-              className={`w-full flex items-center justify-between px-3 py-2 rounded-lg text-xs font-medium transition ${
+              className={`w-full flex items-center justify-between px-3.5 py-2.5 rounded-xl text-sm font-medium transition ${
                 activeTab === 'EQUIPE'
-                  ? 'bg-zinc-800/90 text-white border border-zinc-700/70'
-                  : 'text-zinc-400 hover:bg-zinc-900 hover:text-zinc-200'
+                  ? 'bg-[#004B8D]/30 text-white border border-[#0066CC]/50 shadow-sm'
+                  : 'text-slate-400 hover:bg-[#111D32] hover:text-slate-200'
               }`}
             >
-              <span className="flex items-center gap-2.5">
-                <Users className="w-4 h-4 text-amber-400" />
-                Integrantes (A-Z)
+              <span className="flex items-center gap-3">
+                <Users className="w-4 h-4 text-emerald-400"/>
+                Equipe GT_Splice (A-Z)
               </span>
-              <span className="text-[11px] font-mono text-zinc-400">
+              <span className="text-[11px] font-mono px-2 py-0.5 rounded-full bg-[#132038] text-slate-300 border border-[#1E3256]">
                 {state.team.length}
               </span>
             </button>
           </nav>
 
-          {/* AMBIENTES E SALAS FACENS */}
-          <div className="px-3 py-3 rounded-xl bg-[#121216] border border-zinc-800/80 space-y-2">
-            <div className="flex items-center gap-2 text-xs font-medium text-zinc-200">
-              <Building2 className="w-3.5 h-3.5 text-zinc-400" />
-              Infraestrutura Facens
+          {/* PAINEL DE APOIO RÁPIDO : SALAS E INFRA */}
+          <div className="mt-6 p-3.5 rounded-xl bg-[#111D32]/80 border border-[#1B2B48] space-y-2">
+            <div className="flex items-center gap-2 text-xs font-semibold text-sky-300">
+              <Building2 className="w-3.5 h-3.5 text-[#00A859]"/>
+              Infraestrutura & Canais
             </div>
-            <div className="text-[11px] text-zinc-400 space-y-1 leading-relaxed">
-              <div>• <strong className="text-zinc-200">Sala D29:</strong> Máquina potente (Unity)</div>
-              <div>• <strong className="text-zinc-200">Sala 13:</strong> Bancada e monitores</div>
-              <div>• <strong className="text-zinc-200">Teams:</strong> Canal <code className="text-zinc-300">GT_Splice</code></div>
+            <div className="text-[11px] text-slate-300 space-y-1 leading-relaxed">
+              <div>• <strong>Sala D29:</strong> Máquina High-End (Unity)</div>
+              <div>• <strong>Sala 13:</strong> Bancada e monitores</div>
+              <div>• <strong>Teams:</strong> Canal <code className="text-[#00A859]">GT_Splice</code></div>
             </div>
           </div>
         </div>
 
-        {/* EXPORTAR / IMPORTAR JSON */}
-        <div className="pt-4 mt-6 border-t border-zinc-800/80 space-y-2">
+        {/* BACKUP & RESTAURAÇÃO */}
+        <div className="mt-8 pt-4 border-t border-[#1B2B48] space-y-2">
+          <div className="text-[11px] font-mono text-slate-400 uppercase tracking-wider mb-2">
+            Sincronização & Estado
+          </div>
           <button
             type="button"
             onClick={() => exportStateAsJson(state)}
-            className="w-full flex items-center justify-center gap-2 px-3 py-2 rounded-lg bg-zinc-900 hover:bg-zinc-800 text-xs font-medium text-zinc-200 border border-zinc-800 transition"
+            className="w-full flex items-center justify-center gap-2 px-3 py-2 rounded-lg bg-[#111D32] hover:bg-[#162642] text-xs font-medium text-slate-200 border border-[#213559] transition"
           >
-            <Download className="w-3.5 h-3.5 text-zinc-400" />
-            Exportar Backup (.JSON)
+            <Download className="w-3.5 h-3.5 text-[#00A859]"/>
+            Exportar JSON
           </button>
+
           <button
             type="button"
             onClick={() => fileInputRef.current?.click()}
-            className="w-full flex items-center justify-center gap-2 px-3 py-2 rounded-lg bg-zinc-900 hover:bg-zinc-800 text-xs font-medium text-zinc-200 border border-zinc-800 transition"
+            className="w-full flex items-center justify-center gap-2 px-3 py-2 rounded-lg bg-[#111D32] hover:bg-[#162642] text-xs font-medium text-slate-200 border border-[#213559] transition"
           >
-            <Upload className="w-3.5 h-3.5 text-zinc-400" />
-            Importar Backup (.JSON)
+            <Upload className="w-3.5 h-3.5 text-sky-400"/>
+            Importar JSON
           </button>
           <input
             ref={fileInputRef}
@@ -495,774 +452,822 @@ export default function GTSpliceWorkspace() {
             onChange={handleImportJson}
             className="hidden"
           />
+
           <button
             type="button"
             onClick={() => {
-              if (confirm('Restaurar o estado padrão (mantendo apenas as metas oficiais e os materiais de estudo)?')) {
+              if (confirm('Restaurar dados originais do projeto (limpando tarefas locais)?')) {
                 setState(resetToSeedState());
               }
             }}
-            className="w-full flex items-center justify-center gap-1.5 py-1 text-[11px] text-zinc-500 hover:text-zinc-300 transition"
+            className="w-full flex items-center justify-center gap-2 px-3 py-1.5 rounded-lg text-[11px] text-slate-400 hover:text-rose-400 transition"
           >
-            <RotateCcw className="w-3 h-3" />
-            Restaurar padrão inicial
+            <RotateCcw className="w-3 h-3"/>
+            Resetar Padrão
           </button>
         </div>
       </aside>
 
-      {/* ÁREA DE CONTEÚDO PRINCIPAL */}
-      <div className="flex-1 flex flex-col min-w-0">
-        {/* TOPBAR */}
-        <header className="border-b border-zinc-800/80 bg-[#0c0c0f]/90 backdrop-blur px-6 py-4 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+      {/* ÁREA PRINCIPAL */}
+      <main className="flex-1 p-6 md:p-8 overflow-y-auto">
+        {/* CABEÇALHO SUPERIOR */}
+        <header className="flex flex-col lg:flex-row lg:items-center justify-between gap-4 pb-6 mb-6 border-b border-[#1B2B48]">
           <div>
-            <div className="flex items-center gap-2 text-[11px] font-mono text-zinc-400">
-              <span>SPLICE • UNIFACENS • MCTI / SOFTEX</span>
+            <div className="flex flex-wrap items-center gap-2 text-xs text-[#00A859] font-mono mb-1">
+              <span className="inline-flex items-center gap-1">
+                <Radio className="w-3.5 h-3.5"/>
+                MOBILIDADE & REALIDADE MISTA (MR)
+              </span>
               <span>•</span>
-              <span className="text-indigo-400">REALIDADE MISTA (UNITY / BROWSER)</span>
+              <span className="text-sky-400">ENGINE UNITY (FRED)</span>
+              <span>•</span>
+              <span className="text-slate-300">VIÁRIO & CÂMERAS SPLICE</span>
             </div>
-            <h2 className="text-lg font-semibold text-white tracking-tight mt-0.5">
-              {activeTab === 'METAS' && 'Metas Oficiais & Escopo do Desafio (Kickoff 09/11)'}
-              {activeTab === 'ESTUDO' && 'Acervo Técnico & Materiais para Inventário'}
-              {activeTab === 'KANBAN' && 'Plano de Trabalho Vivo & Quadro de Tarefas'}
-              {activeTab === 'EQUIPE' && 'Integrantes do Grupo GT_Splice (Ordem Alfabética)'}
+            <h2 className="text-2xl font-bold text-white">
+              Desafio Splice: Campus Facens em Realidade Mista
             </h2>
           </div>
 
-          <div className="flex items-center gap-3">
-            <div className="hidden sm:flex items-center gap-3 px-3.5 py-1.5 rounded-lg bg-[#121216] border border-zinc-800 text-xs">
-              <span className="text-zinc-400">Checklist Oficial:</span>
-              <span className="font-mono font-semibold text-white">{goalsProgress}%</span>
-              <div className="w-20 h-1.5 bg-zinc-800 rounded-full overflow-hidden">
-                <div
-                  className="h-full bg-indigo-500 transition-all"
-                  style={{ width: `${goalsProgress}%` }}
-                />
+          <div className="flex flex-wrap items-center gap-3">
+            {/* MARCO DE ENTREGA */}
+            <div className="bg-[#0C1524] border border-[#004B8D]/60 px-3.5 py-2 rounded-xl flex items-center gap-2.5">
+              <Calendar className="w-4 h-4 text-[#00A859]"/>
+              <div>
+                <span className="text-[10px] font-mono uppercase text-sky-300 block">
+                  1ª Entrega: Janeiro/2027
+                </span>
+                <span className="text-xs font-bold text-white">
+                  MR em Browser • Spots Clicáveis
+                </span>
               </div>
             </div>
 
-            {activeTab === 'ESTUDO' ? (
-              <button
-                type="button"
-                onClick={() => matDialogRef.current?.showModal()}
-                className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-lg bg-zinc-100 hover:bg-white text-zinc-950 text-xs font-semibold transition shadow-sm"
-              >
-                <Plus className="w-4 h-4" />
-                Adicionar Material
-              </button>
-            ) : (
-              <button
-                type="button"
-                onClick={() => openCreateTaskModal('PENDENTE')}
-                className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-lg bg-zinc-100 hover:bg-white text-zinc-950 text-xs font-semibold transition shadow-sm"
-              >
-                <Plus className="w-4 h-4" />
-                Nova Tarefa do Grupo
-              </button>
-            )}
+            <div className="bg-[#0C1524] border border-[#1B2B48] px-4 py-2 rounded-xl">
+              <span className="text-[11px] text-slate-400 block">
+                Tarefas do Grupo ({completedTasks}/{totalTasks})
+              </span>
+              <div className="flex items-center gap-2">
+                <span className="text-lg font-bold text-[#00A859]">{overallProgress}%</span>
+                <div className="w-24 h-2 bg-[#132038] rounded-full overflow-hidden">
+                  <div
+                    className="h-full bg-gradient-to-r from-[#004B8D] to-[#00A859]"
+                    style={{ width: `${overallProgress}%` }}
+                  />
+                </div>
+              </div>
+            </div>
+
+            <button
+              type="button"
+              onClick={() => openCreateTaskModal('PENDENTE')}
+              className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-gradient-to-r from-[#004B8D] to-[#008F5D] hover:from-[#0059A8] hover:to-[#00A859] text-white text-sm font-semibold shadow-lg shadow-[#004B8D]/25 border border-white/10 transition"
+            >
+              <Plus className="w-4 h-4"/>
+              Nova Tarefa
+            </button>
           </div>
         </header>
 
-        {/* CONTEÚDO DAS ABAS */}
-        <main className="flex-1 p-6 md:p-8 space-y-6 overflow-y-auto">
-          {/* ABA 1: METAS OFICIAIS */}
-          {activeTab === 'METAS' && (
-            <div className="space-y-6">
-              {/* FAIXA DE RESUMO EXECUTIVO */}
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-                <div className="p-4 rounded-xl bg-[#111115] border border-zinc-800/90">
-                  <span className="text-[11px] font-mono uppercase text-zinc-400">
-                    1ª Entrega Oficial
-                  </span>
-                  <div className="text-base font-semibold text-white mt-1">
-                    Janeiro / 2027
-                  </div>
-                  <p className="text-xs text-zinc-400 mt-1">
-                    Ambiente MR rodando em browser com pontos clicáveis no viário.
-                  </p>
+        {/* ABA 1: METAS OFICIAIS DO KICKOFF */}
+        {activeTab === 'DASHBOARD' && (
+          <div className="space-y-6">
+            {/* FAIXA DE PILARES OFICIAIS (ESTILO CCO SPLICE) */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4">
+              <div className="bg-[#0C1524] border border-[#1B2B48] rounded-2xl p-4 flex items-start gap-3.5">
+                <div className="p-2.5 rounded-xl bg-[#004B8D]/25 border border-[#0066CC]/40 text-sky-300">
+                  <Route className="w-5 h-5"/>
                 </div>
-
-                <div className="p-4 rounded-xl bg-[#111115] border border-zinc-800/90">
-                  <span className="text-[11px] font-mono uppercase text-zinc-400">
-                    Engine & Validação
+                <div>
+                  <span className="text-[11px] font-mono uppercase text-sky-400 block">
+                    Foco Espacial 3D
                   </span>
-                  <div className="text-base font-semibold text-white mt-1">
-                    Unity + Prof. Fred
-                  </div>
-                  <p className="text-xs text-zinc-400 mt-1">
-                    Fazer inventário do material anterior e validar compatibilidade.
-                  </p>
-                </div>
-
-                <div className="p-4 rounded-xl bg-[#111115] border border-zinc-800/90">
-                  <span className="text-[11px] font-mono uppercase text-zinc-400">
-                    Ponto Crítico 3D
-                  </span>
-                  <div className="text-base font-semibold text-white mt-1">
-                    Polígonos vs. Sombras
-                  </div>
-                  <p className="text-xs text-zinc-400 mt-1">
-                    Podar árvores do entorno, focar no viário e testar na Sala D29.
-                  </p>
-                </div>
-
-                <div className="p-4 rounded-xl bg-[#111115] border border-zinc-800/90">
-                  <span className="text-[11px] font-mono uppercase text-zinc-400">
-                    Etapa 2 (Posterior)
-                  </span>
-                  <div className="text-base font-semibold text-white mt-1">
-                    Real-Time 5G & IA
-                  </div>
-                  <p className="text-xs text-zinc-400 mt-1">
-                    Stream ao vivo das câmeras Splice + vestimenta, idade e gênero.
+                  <h4 className="text-sm font-bold text-white mt-0.5">
+                    Sistema Viário & Postes
+                  </h4>
+                  <p className="text-xs text-slate-400 mt-1">
+                    Recortar área focando no viário e destacar postes/câmeras clicáveis.
                   </p>
                 </div>
               </div>
 
-              {/* CARDS INTERATIVOS DAS METAS OFICIAIS */}
-              <div className="grid grid-cols-1 xl:grid-cols-2 gap-5">
-                {state.goals.map((group) => {
-                  const doneCount = group.items.filter((i) => i.completed).length;
-                  return (
-                    <div
-                      key={group.id}
-                      className="rounded-xl bg-[#111115] border border-zinc-800/90 flex flex-col justify-between overflow-hidden"
-                    >
-                      <div className="p-5 border-b border-zinc-800/80 flex items-start justify-between gap-4 bg-[#141419]">
-                        <div>
-                          <span className="inline-block text-[10px] font-mono uppercase tracking-wider px-2 py-0.5 rounded bg-indigo-950/70 text-indigo-300 border border-indigo-800/60 mb-1.5">
-                            {group.badge}
-                          </span>
-                          <h3 className="text-base font-semibold text-white">
-                            {group.title}
-                          </h3>
-                          <p className="text-xs text-zinc-400 mt-0.5">
-                            {group.subtitle}
-                          </p>
-                        </div>
-                        <span className="text-xs font-mono px-2.5 py-1 rounded-md bg-zinc-900 text-zinc-300 border border-zinc-800 shrink-0">
-                          {doneCount}/{group.items.length}
-                        </span>
-                      </div>
+              <div className="bg-[#0C1524] border border-[#1B2B48] rounded-2xl p-4 flex items-start gap-3.5">
+                <div className="p-2.5 rounded-xl bg-[#00A859]/20 border border-[#00A859]/40 text-[#00A859]">
+                  <ShieldCheck className="w-5 h-5"/>
+                </div>
+                <div>
+                  <span className="text-[11px] font-mono uppercase text-[#00A859] block">
+                    Validação Técnica
+                  </span>
+                  <h4 className="text-sm font-bold text-white mt-0.5">
+                    Inventário + Unity (Fred)
+                  </h4>
+                  <p className="text-xs text-slate-400 mt-1">
+                    Cruzar material da capacitação Splice com a Unity antes de codificar.
+                  </p>
+                </div>
+              </div>
 
-                      <div className="p-4 divide-y divide-zinc-800/60">
-                        {group.items.map((item) => (
-                          <div
-                            key={item.id}
-                            className="py-3 first:pt-1 last:pb-1 flex items-start justify-between gap-3 group"
-                          >
-                            <button
-                              type="button"
-                              onClick={() => handleToggleGoalItem(group.id, item.id)}
-                              className="flex items-start gap-3 text-left flex-1"
-                            >
-                              {item.completed ? (
-                                <CheckCircle2 className="w-4 h-4 text-emerald-400 shrink-0 mt-0.5" />
-                              ) : (
-                                <Circle className="w-4 h-4 text-zinc-600 group-hover:text-zinc-400 shrink-0 mt-0.5" />
-                              )}
-                              <span
-                                className={`text-xs leading-relaxed ${
-                                  item.completed
-                                    ? 'line-through text-zinc-500'
-                                    : 'text-zinc-200'
-                                }`}
-                              >
-                                {item.text}
-                              </span>
-                            </button>
+              <div className="bg-[#0C1524] border border-[#1B2B48] rounded-2xl p-4 flex items-start gap-3.5">
+                <div className="p-2.5 rounded-xl bg-amber-500/15 border border-amber-500/40 text-amber-300">
+                  <CheckCircle2 className="w-5 h-5"/>
+                </div>
+                <div>
+                  <span className="text-[11px] font-mono uppercase text-amber-300 block">
+                    Otimização Gráfica
+                  </span>
+                  <h4 className="text-sm font-bold text-white mt-0.5">
+                    Polígonos, Sombras & D29
+                  </h4>
+                  <p className="text-xs text-slate-400 mt-1">
+                    Reduzir árvores se pesar nos óculos e testar sombras/animações na Sala D29.
+                  </p>
+                </div>
+              </div>
 
-                            <button
-                              type="button"
-                              onClick={() =>
-                                handleConvertGoalToTask(item.text, group.title)
-                              }
-                              title="Enviar este item como tarefa para o Plano de Trabalho"
-                              className="opacity-80 sm:opacity-0 group-hover:opacity-100 inline-flex items-center gap-1 px-2 py-1 rounded bg-zinc-800 hover:bg-zinc-700 text-[10px] font-medium text-zinc-200 border border-zinc-700 transition shrink-0"
-                            >
-                              <Plus className="w-3 h-3" />
-                              Virar Tarefa
-                            </button>
-                          </div>
-                        ))}
-                      </div>
-                    </div>
-                  );
-                })}
+              <div className="bg-[#0C1524] border border-[#1B2B48] rounded-2xl p-4 flex items-start gap-3.5">
+                <div className="p-2.5 rounded-xl bg-sky-500/15 border border-sky-500/40 text-sky-300">
+                  <Video className="w-5 h-5"/>
+                </div>
+                <div>
+                  <span className="text-[11px] font-mono uppercase text-sky-300 block">
+                    Etapa 2 (Pós-Janeiro)
+                  </span>
+                  <h4 className="text-sm font-bold text-white mt-0.5">
+                    Real-Time 5G & IA
+                  </h4>
+                  <p className="text-xs text-slate-400 mt-1">
+                    Feed em tempo real das câmeras + vestimenta, faixa etária e gênero.
+                  </p>
+                </div>
               </div>
             </div>
-          )}
 
-          {/* ABA 2: MATERIAL DE ESTUDO E ACERVO */}
-          {activeTab === 'ESTUDO' && (
-            <div className="space-y-6">
-              <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
-                {state.materials.map((mat) => {
-                  const cat = CATEGORY_META[mat.category] || CATEGORY_META.DOSSIE;
-                  const IconComponent = cat.icon;
-                  const isUrl = mat.referenceOrUrl.startsWith('http');
-                  return (
-                    <div
-                      key={mat.id}
-                      className="rounded-xl bg-[#111115] border border-zinc-800/90 hover:border-zinc-700 p-5 flex flex-col justify-between transition"
-                    >
-                      <div className="space-y-3">
-                        <div className="flex items-center justify-between gap-2">
-                          <span
-                            className={`inline-flex items-center gap-1.5 text-[10px] font-mono px-2.5 py-0.5 rounded border ${cat.badge}`}
+            {/* CARDS DOS 4 BLOCOS DE METAS OFICIAIS */}
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-5">
+              {state.goals.map((goal) => (
+                <div
+                  key={goal.id}
+                  className="bg-[#0C1524] border border-[#1B2B48] rounded-2xl p-6 flex flex-col justify-between"
+                >
+                  <div>
+                    <div className="flex items-center justify-between gap-2 mb-3 pb-3 border-b border-[#1B2B48]">
+                      <div>
+                        <span className="text-[10px] font-mono uppercase tracking-wider px-2.5 py-0.5 rounded bg-[#111D32] text-[#00A859] border border-[#1E3256]">
+                          {goal.code}
+                        </span>
+                        <h3 className="text-base font-bold text-white mt-1.5">
+                          {goal.title}
+                        </h3>
+                      </div>
+                      <span className="text-xs font-mono text-slate-400 bg-[#111D32] px-2.5 py-1 rounded-lg border border-[#1B2B48]">
+                        {goal.items.length} metas
+                      </span>
+                    </div>
+
+                    <ul className="space-y-3 text-xs text-slate-200">
+                      {goal.items.map((item, i) => (
+                        <li
+                          key={i}
+                          className="flex items-start justify-between gap-3 p-2.5 rounded-xl bg-[#111D32]/60 border border-[#1B2B48]/80 hover:border-[#004B8D] transition group"
+                        >
+                          <div className="flex items-start gap-2.5">
+                            <span className="w-2 h-2 rounded-full bg-[#00A859] shrink-0 mt-1.5" />
+                            <span className="leading-relaxed">{item}</span>
+                          </div>
+                          <button
+                            type="button"
+                            onClick={() => handlePromoteGoalToTask(item, goal.title)}
+                            title="Enviar para o Plano de Trabalho (Kanban)"
+                            className="shrink-0 inline-flex items-center gap-1 px-2 py-1 rounded-lg bg-[#004B8D]/40 hover:bg-[#004B8D] text-[10px] font-mono text-sky-200 border border-[#0066CC]/50 transition"
                           >
-                            <IconComponent className="w-3 h-3" />
-                            {cat.label}
+                            <Plus className="w-3 h-3"/>
+                            Criar Tarefa
+                          </button>
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {/* ABA 2: MATERIAIS DE ESTUDO & ACERVO */}
+        {activeTab === 'MATERIAIS' && (
+          <div className="space-y-6">
+            <div className="bg-[#0C1524] border border-[#1B2B48] rounded-2xl overflow-hidden">
+              <div className="p-5 border-b border-[#1B2B48] flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                <div>
+                  <h3 className="text-base font-bold text-white">
+                    Acervo de Estudo & Inventário Técnico (SIGABEM / LIGA / TIC 51)
+                  </h3>
+                  <p className="text-xs text-slate-400">
+                    Materiais reais compartilhados pelo grupo para estudo e validação com o Prof. Fred.
+                  </p>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => materialDialogRef.current?.showModal()}
+                  className="flex items-center gap-2 px-4 py-2 rounded-xl bg-[#004B8D] hover:bg-[#0059A8] text-white text-xs font-semibold border border-sky-400/30 transition shrink-0"
+                >
+                  <Plus className="w-4 h-4"/>
+                  Adicionar Material
+                </button>
+              </div>
+
+              <div className="overflow-x-auto">
+                <table className="w-full text-left border-collapse text-xs">
+                  <thead>
+                    <tr className="bg-[#111D32] text-slate-300 border-b border-[#1B2B48]">
+                      <th className="p-3.5">Título / Material</th>
+                      <th className="p-3.5">Tipo</th>
+                      <th className="p-3.5">Compartilhado por</th>
+                      <th className="p-3.5">Referência / Link</th>
+                      <th className="p-3.5">Notas & Observações</th>
+                      <th className="p-3.5 text-right">Ação</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-[#1B2B48]">
+                    {state.materials.map((mat) => (
+                      <tr key={mat.id} className="hover:bg-[#111D32]/60">
+                        <td className="p-3.5 font-semibold text-white max-w-xs">
+                          {mat.title}
+                        </td>
+                        <td className="p-3.5">
+                          <span className="px-2 py-0.5 rounded bg-[#132038] text-sky-300 border border-[#23385E] font-mono text-[11px]">
+                            {mat.type}
                           </span>
+                        </td>
+                        <td className="p-3.5">
+                          <select
+                            aria-label={`Responsável por ${mat.title}`}
+                            value={mat.sharedBy}
+                            onChange={(e) =>
+                              handleMaterialSharedByChange(mat.id, e.target.value)
+                            }
+                            className="bg-[#111D32] text-xs text-[#00A859] px-2.5 py-1 rounded-lg border border-[#213559]"
+                          >
+                            <option value="Equipe GT_Splice">Equipe GT_Splice</option>
+                            {sortedTeam.map((m) => (
+                              <option key={m.id} value={m.name}>
+                                {m.name}
+                              </option>
+                            ))}
+                          </select>
+                        </td>
+                        <td className="p-3.5 font-mono text-sky-300 max-w-xs truncate">
+                          {mat.referenceOrUrl.startsWith('http') ? (
+                            <a
+                              href={mat.referenceOrUrl}
+                              target="_blank"
+                              rel="noreferrer"
+                              className="inline-flex items-center gap-1.5 hover:underline text-sky-300"
+                            >
+                              <ExternalLink className="w-3.5 h-3.5 shrink-0"/>
+                              {mat.referenceOrUrl}
+                            </a>
+                          ) : (
+                            mat.referenceOrUrl
+                          )}
+                        </td>
+                        <td className="p-3.5 text-slate-300 max-w-sm leading-relaxed">
+                          {mat.notes}
+                        </td>
+                        <td className="p-3.5 text-right">
                           <button
                             type="button"
                             onClick={() => handleDeleteMaterial(mat.id)}
-                            className="text-zinc-500 hover:text-rose-400 transition"
+                            className="text-slate-500 hover:text-rose-400 p-1"
                             title="Remover material"
                           >
-                            <Trash2 className="w-3.5 h-3.5" />
+                            <Trash2 className="w-4 h-4"/>
                           </button>
-                        </div>
-
-                        <div>
-                          <h3 className="text-sm font-semibold text-white leading-snug">
-                            {mat.title}
-                          </h3>
-                          <span className="text-[11px] text-zinc-400 block mt-0.5">
-                            {mat.type} • Compartilhado por <strong className="text-zinc-300">{mat.sharedBy}</strong>
-                          </span>
-                        </div>
-
-                        <p className="text-xs text-zinc-300 leading-relaxed">
-                          {mat.notes}
-                        </p>
-                      </div>
-
-                      <div className="pt-3 mt-4 border-t border-zinc-800/80 flex items-center justify-between gap-2">
-                        {isUrl ? (
-                          <a
-                            href={mat.referenceOrUrl}
-                            target="_blank"
-                            rel="noreferrer"
-                            className="inline-flex items-center gap-1.5 text-xs font-mono text-indigo-400 hover:text-indigo-300 truncate"
-                          >
-                            <ExternalLink className="w-3.5 h-3.5 shrink-0" />
-                            <span className="truncate">{mat.referenceOrUrl}</span>
-                          </a>
-                        ) : (
-                          <span className="text-[11px] font-mono text-zinc-400 truncate">
-                            {mat.referenceOrUrl}
-                          </span>
-                        )}
-                      </div>
-                    </div>
-                  );
-                })}
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
               </div>
             </div>
-          )}
+          </div>
+        )}
 
-          {/* ABA 3: PLANO DE TRABALHO (KANBAN & LISTA) */}
-          {activeTab === 'KANBAN' && (
-            <div className="space-y-5">
-              {/* BARRA DE CONTROLE */}
-              <div className="flex flex-wrap items-center justify-between gap-3 bg-[#111115] p-3.5 rounded-xl border border-zinc-800/90">
-                <div className="flex flex-wrap items-center gap-2.5">
-                  <div className="relative">
-                    <Search className="w-3.5 h-3.5 text-zinc-500 absolute left-3 top-2.5" />
-                    <input
-                      type="text"
-                      placeholder="Filtrar tarefas..."
-                      value={searchQuery}
-                      onChange={(e) => setSearchQuery(e.target.value)}
-                      className="bg-[#09090b] text-xs text-zinc-200 pl-8 pr-3 py-1.5 rounded-lg border border-zinc-800 focus:outline-none focus:border-zinc-600"
-                    />
-                  </div>
-
-                  <select
-                    value={selectedAssignee}
-                    onChange={(e) => setSelectedAssignee(e.target.value)}
-                    className="bg-[#09090b] text-xs text-zinc-200 px-3 py-1.5 rounded-lg border border-zinc-800"
-                  >
-                    <option value="ALL">Todos os integrantes</option>
-                    <option value="Em aberto">Em aberto</option>
-                    {sortedTeam.map((m) => (
-                      <option key={m.id} value={m.name}>
-                        {m.name}
-                      </option>
-                    ))}
-                  </select>
+        {/* ABA 3: PLANO DE TRABALHO (KANBAN & LISTA) */}
+        {activeTab === 'KANBAN' && (
+          <div className="space-y-5">
+            {/* BARRA DE FILTROS & BUSCA */}
+            <div className="flex flex-wrap items-center justify-between gap-3 bg-[#0C1524] p-4 rounded-2xl border border-[#1B2B48]">
+              <div className="flex flex-wrap items-center gap-3">
+                <div className="relative">
+                  <Search className="w-3.5 h-3.5 absolute left-3 top-2.5 text-slate-400"/>
+                  <input
+                    type="text"
+                    placeholder="Buscar tarefas..."
+                    value={searchQuery}
+                    onChange={(e) => setSearchQuery(e.target.value)}
+                    className="bg-[#111D32] text-xs text-slate-200 pl-8 pr-3 py-2 rounded-lg border border-[#213559] focus:outline-none focus:border-[#00A859]"
+                  />
                 </div>
 
-                <div className="flex items-center gap-2">
-                  <div className="flex items-center bg-[#09090b] p-1 rounded-lg border border-zinc-800">
-                    <button
-                      type="button"
-                      onClick={() => setViewMode('BOARD')}
-                      className={`flex items-center gap-1.5 px-2.5 py-1 rounded-md text-xs font-medium transition ${
-                        viewMode === 'BOARD'
-                          ? 'bg-zinc-800 text-white'
-                          : 'text-zinc-400 hover:text-zinc-200'
-                      }`}
-                    >
-                      <Columns3 className="w-3.5 h-3.5" />
-                      Quadro
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => setViewMode('LIST')}
-                      className={`flex items-center gap-1.5 px-2.5 py-1 rounded-md text-xs font-medium transition ${
-                        viewMode === 'LIST'
-                          ? 'bg-zinc-800 text-white'
-                          : 'text-zinc-400 hover:text-zinc-200'
-                      }`}
-                    >
-                      <List className="w-3.5 h-3.5" />
-                      Tabela
-                    </button>
-                  </div>
-                </div>
+                <select
+                  aria-label="Filtrar por Etapa"
+                  value={selectedStage}
+                  onChange={(e) => setSelectedStage(e.target.value)}
+                  className="bg-[#111D32] text-xs text-slate-200 px-3 py-2 rounded-lg border border-[#213559]"
+                >
+                  <option value="ALL">Todas as Etapas</option>
+                  {availableStages.map((stage) => (
+                    <option key={stage} value={stage}>
+                      {stage}
+                    </option>
+                  ))}
+                </select>
+
+                <select
+                  aria-label="Filtrar por Responsável"
+                  value={selectedAssignee}
+                  onChange={(e) => setSelectedAssignee(e.target.value)}
+                  className="bg-[#111D32] text-xs text-slate-200 px-3 py-2 rounded-lg border border-[#213559]"
+                >
+                  <option value="ALL">Todos os Responsáveis</option>
+                  <option value="A definir">A definir pelo grupo</option>
+                  {sortedTeam.map((m) => (
+                    <option key={m.id} value={m.name}>
+                      {m.name}
+                    </option>
+                  ))}
+                </select>
               </div>
 
-              {viewMode === 'BOARD' ? (
-                <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-4">
-                  {(
-                    ['PENDENTE', 'VALIDACAO', 'EM_ANDAMENTO', 'CONCLUIDO'] as TaskStatus[]
-                  ).map((st) => {
-                    const colTasks = filteredTasks.filter((t) => t.status === st);
-                    const meta = STATUS_META[st];
-                    return (
-                      <div
-                        key={st}
-                        onDragOver={(e) => e.preventDefault()}
-                        onDrop={() => {
-                          if (draggedTaskId) {
-                            handleUpdateTask(draggedTaskId, { status: st });
-                            setDraggedTaskId(null);
-                          }
-                        }}
-                        className="rounded-xl bg-[#111115] border border-zinc-800/90 p-3.5 flex flex-col min-h-[480px]"
-                      >
-                        <div className="flex items-center justify-between pb-3 mb-3 border-b border-zinc-800/80">
-                          <div className="flex items-center gap-2">
-                            <span className={`w-2 h-2 rounded-full ${meta.dot}`} />
-                            <span className="text-xs font-semibold text-zinc-200">
-                              {meta.label}
-                            </span>
-                          </div>
-                          <div className="flex items-center gap-1.5">
-                            <span className="text-xs font-mono text-zinc-400 px-1.5 py-0.5 rounded bg-zinc-900">
-                              {colTasks.length}
-                            </span>
-                            <button
-                              type="button"
-                              onClick={() => openCreateTaskModal(st)}
-                              className="p-1 rounded hover:bg-zinc-800 text-zinc-400 hover:text-white transition"
-                              title="Adicionar nesta coluna"
-                            >
-                              <Plus className="w-3.5 h-3.5" />
-                            </button>
-                          </div>
+              <div className="flex items-center gap-1.5 bg-[#111D32] p-1 rounded-xl border border-[#213559]">
+                <button
+                  type="button"
+                  onClick={() => setKanbanViewMode('BOARD')}
+                  className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium transition ${
+                    kanbanViewMode === 'BOARD'
+                      ? 'bg-[#004B8D] text-white'
+                      : 'text-slate-400 hover:text-slate-200'
+                  }`}
+                >
+                  <Columns3 className="w-3.5 h-3.5"/>
+                  Colunas
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setKanbanViewMode('LIST')}
+                  className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium transition ${
+                    kanbanViewMode === 'LIST'
+                      ? 'bg-[#004B8D] text-white'
+                      : 'text-slate-400 hover:text-slate-200'
+                  }`}
+                >
+                  <List className="w-3.5 h-3.5"/>
+                  Lista
+                </button>
+              </div>
+            </div>
+
+            {/* VISÃO EM COLUNAS */}
+            {kanbanViewMode === 'BOARD' ? (
+              <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-4">
+                {(
+                  ['PENDENTE', 'VALIDACAO', 'EM_ANDAMENTO', 'CONCLUIDO'] as TaskStatus[]
+                ).map((statusKey) => {
+                  const colTasks = filteredTasks.filter((t) => t.status === statusKey);
+                  return (
+                    <div
+                      key={statusKey}
+                      onDragOver={(e) => e.preventDefault()}
+                      onDrop={() => {
+                        if (draggedTaskId) {
+                          handleTaskStatusChange(draggedTaskId, statusKey);
+                          setDraggedTaskId(null);
+                        }
+                      }}
+                      className="bg-[#0C1524] border border-[#1B2B48] rounded-2xl p-4 flex flex-col min-h-[440px]"
+                    >
+                      <div className="flex items-center justify-between pb-3 mb-3 border-b border-[#1B2B48]">
+                        <span
+                          className={`text-xs font-semibold px-2.5 py-1 rounded-md border ${STATUS_CONFIG[statusKey].badgeClass}`}
+                        >
+                          {STATUS_CONFIG[statusKey].label}
+                        </span>
+                        <div className="flex items-center gap-1.5">
+                          <span className="text-xs font-mono text-slate-400">
+                            {colTasks.length}
+                          </span>
+                          <button
+                            type="button"
+                            onClick={() => openCreateTaskModal(statusKey)}
+                            className="p-1 rounded-lg bg-[#111D32] hover:bg-[#004B8D] text-slate-300 hover:text-white transition"
+                            title="Criar tarefa nesta coluna"
+                          >
+                            <Plus className="w-3.5 h-3.5"/>
+                          </button>
                         </div>
+                      </div>
 
-                        {colTasks.length === 0 ? (
-                          <div className="flex-1 flex flex-col items-center justify-center text-center p-4 border border-dashed border-zinc-800/70 rounded-lg">
-                            <p className="text-xs text-zinc-500 mb-2">
-                              Nenhuma tarefa em {meta.label.toLowerCase()}.
-                            </p>
-                            <button
-                              type="button"
-                              onClick={() => openCreateTaskModal(st)}
-                              className="inline-flex items-center gap-1 text-[11px] text-zinc-300 hover:text-white px-2.5 py-1 rounded bg-zinc-900 border border-zinc-800 transition"
+                      {colTasks.length === 0 ? (
+                        <div className="flex-1 flex flex-col items-center justify-center text-center p-4 border border-dashed border-[#1B2B48] rounded-xl">
+                          <p className="text-xs text-slate-400 mb-2">
+                            Sem tarefas em {STATUS_CONFIG[statusKey].label}.
+                          </p>
+                          <button
+                            type="button"
+                            onClick={() => openCreateTaskModal(statusKey)}
+                            className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-[#111D32] hover:bg-[#162642] text-xs text-sky-300 border border-[#213559] transition"
+                          >
+                            <Plus className="w-3.5 h-3.5"/>
+                            Adicionar Tarefa
+                          </button>
+                        </div>
+                      ) : (
+                        <div className="space-y-3 flex-1">
+                          {colTasks.map((task) => (
+                            <div
+                              key={task.id}
+                              draggable
+                              onDragStart={() => setDraggedTaskId(task.id)}
+                              onDragEnd={() => setDraggedTaskId(null)}
+                              className={`bg-[#111D32] border border-[#1E3256] ${STATUS_CONFIG[statusKey].borderHover} rounded-xl p-3.5 space-y-2.5 transition cursor-grab active:cursor-grabbing`}
                             >
-                              <Plus className="w-3 h-3" />
-                              Criar tarefa
-                            </button>
-                          </div>
-                        ) : (
-                          <div className="space-y-2.5 flex-1">
-                            {colTasks.map((task) => (
-                              <div
-                                key={task.id}
-                                draggable
-                                onDragStart={() => setDraggedTaskId(task.id)}
-                                onDragEnd={() => setDraggedTaskId(null)}
-                                className={`p-3.5 rounded-lg bg-[#16161c] border border-zinc-800 ${meta.border} space-y-2.5 transition cursor-grab active:cursor-grabbing`}
-                              >
-                                <div className="flex items-center justify-between gap-2">
-                                  <span className="text-[10px] font-mono text-zinc-400 px-2 py-0.5 rounded bg-zinc-900 border border-zinc-800 truncate">
-                                    {task.stage}
-                                  </span>
-                                  <div className="flex items-center gap-1 shrink-0">
-                                    <button
-                                      type="button"
-                                      onClick={() => openEditTaskModal(task)}
-                                      className="p-1 text-zinc-400 hover:text-white"
-                                      title="Editar"
-                                    >
-                                      <Edit3 className="w-3.5 h-3.5" />
-                                    </button>
-                                    <button
-                                      type="button"
-                                      onClick={() => handleDeleteTask(task.id)}
-                                      className="p-1 text-zinc-500 hover:text-rose-400"
-                                      title="Excluir"
-                                    >
-                                      <Trash2 className="w-3.5 h-3.5" />
-                                    </button>
-                                  </div>
-                                </div>
-
-                                <h4 className="text-xs font-medium text-zinc-100 leading-snug">
-                                  {task.title}
-                                </h4>
-
-                                {task.notes && (
-                                  <p className="text-[11px] text-zinc-400 leading-relaxed">
-                                    {task.notes}
-                                  </p>
-                                )}
-
-                                <div className="pt-2 border-t border-zinc-800/80 flex items-center justify-between gap-2">
-                                  <select
-                                    value={task.assignee}
-                                    onChange={(e) =>
-                                      handleUpdateTask(task.id, {
-                                        assignee: e.target.value
-                                      })
-                                    }
-                                    className="bg-[#09090b] text-[11px] text-zinc-300 px-2 py-1 rounded border border-zinc-800 max-w-[140px] truncate"
+                              <div className="flex items-center justify-between gap-2">
+                                <span className="text-[10px] font-mono px-2 py-0.5 rounded bg-[#0C1524] text-[#00A859] border border-[#1B2B48] truncate">
+                                  {task.stage}
+                                </span>
+                                <div className="flex items-center gap-1.5 shrink-0">
+                                  <button
+                                    type="button"
+                                    onClick={() => openEditTaskModal(task)}
+                                    className="text-slate-400 hover:text-sky-300 transition"
+                                    title="Editar tarefa"
                                   >
-                                    <option value="Em aberto">Em aberto</option>
-                                    {sortedTeam.map((m) => (
-                                      <option key={m.id} value={m.name}>
-                                        {m.name}
-                                      </option>
-                                    ))}
-                                  </select>
-
-                                  <select
-                                    value={task.status}
-                                    onChange={(e) =>
-                                      handleUpdateTask(task.id, {
-                                        status: e.target.value as TaskStatus
-                                      })
-                                    }
-                                    className="bg-[#09090b] text-[11px] text-zinc-400 px-2 py-1 rounded border border-zinc-800"
+                                    <Edit3 className="w-3.5 h-3.5"/>
+                                  </button>
+                                  <button
+                                    type="button"
+                                    onClick={() => handleDeleteTask(task.id)}
+                                    className="text-slate-500 hover:text-rose-400 transition"
+                                    title="Remover tarefa"
                                   >
-                                    <option value="PENDENTE">Pendente</option>
-                                    <option value="VALIDACAO">Validação</option>
-                                    <option value="EM_ANDAMENTO">Execução</option>
-                                    <option value="CONCLUIDO">Concluído</option>
-                                  </select>
+                                    <Trash2 className="w-3.5 h-3.5"/>
+                                  </button>
                                 </div>
                               </div>
-                            ))}
-                          </div>
-                        )}
-                      </div>
-                    );
-                  })}
-                </div>
-              ) : (
-                <div className="rounded-xl bg-[#111115] border border-zinc-800/90 overflow-hidden">
-                  {filteredTasks.length === 0 ? (
-                    <div className="p-10 text-center text-xs text-zinc-500">
-                      Nenhuma tarefa cadastrada. Clique em <strong>Nova Tarefa do Grupo</strong> ou converta qualquer item na aba <strong>Metas Oficiais</strong>.
-                    </div>
-                  ) : (
-                    <div className="overflow-x-auto">
-                      <table className="w-full text-left border-collapse text-xs">
-                        <thead>
-                          <tr className="bg-[#141419] text-zinc-400 border-b border-zinc-800">
-                            <th className="p-3.5 font-medium">Tarefa</th>
-                            <th className="p-3.5 font-medium">Etapa</th>
-                            <th className="p-3.5 font-medium">Responsável</th>
-                            <th className="p-3.5 font-medium">Status</th>
-                            <th className="p-3.5 font-medium text-right">Ações</th>
-                          </tr>
-                        </thead>
-                        <tbody className="divide-y divide-zinc-800/80">
-                          {filteredTasks.map((task) => (
-                            <tr key={task.id} className="hover:bg-zinc-900/40">
-                              <td className="p-3.5 font-medium text-white">
+
+                              <h4 className="text-xs font-semibold text-white leading-snug">
                                 {task.title}
-                                {task.notes && (
-                                  <span className="block text-[11px] text-zinc-400 font-normal mt-0.5">
-                                    {task.notes}
-                                  </span>
-                                )}
-                              </td>
-                              <td className="p-3.5 font-mono text-zinc-400">
-                                {task.stage}
-                              </td>
-                              <td className="p-3.5">
+                              </h4>
+
+                              {task.notes && (
+                                <p className="text-[11px] text-slate-300 leading-relaxed">
+                                  {task.notes}
+                                </p>
+                              )}
+
+                              <div className="pt-1 flex items-center justify-between gap-1">
+                                <span className="text-[10px] text-slate-400">Resp:</span>
                                 <select
+                                  aria-label={`Responsável por ${task.title}`}
                                   value={task.assignee}
                                   onChange={(e) =>
-                                    handleUpdateTask(task.id, {
-                                      assignee: e.target.value
-                                    })
+                                    handleTaskAssigneeChange(task.id, e.target.value)
                                   }
-                                  className="bg-[#09090b] text-xs text-zinc-200 px-2.5 py-1 rounded border border-zinc-800"
+                                  className="bg-[#0C1524] text-[10px] text-sky-300 px-2 py-1 rounded border border-[#213559] max-w-[165px] truncate"
                                 >
-                                  <option value="Em aberto">Em aberto</option>
+                                  <option value="A definir pelo grupo">
+                                    A definir pelo grupo
+                                  </option>
                                   {sortedTeam.map((m) => (
                                     <option key={m.id} value={m.name}>
                                       {m.name}
                                     </option>
                                   ))}
                                 </select>
-                              </td>
-                              <td className="p-3.5">
+                              </div>
+
+                              <div className="pt-2 border-t border-[#1B2B48]">
                                 <select
+                                  aria-label={`Mudar status de ${task.title}`}
                                   value={task.status}
                                   onChange={(e) =>
-                                    handleUpdateTask(task.id, {
-                                      status: e.target.value as TaskStatus
-                                    })
+                                    handleTaskStatusChange(
+                                      task.id,
+                                      e.target.value as TaskStatus
+                                    )
                                   }
-                                  className="bg-[#09090b] text-xs text-zinc-200 px-2.5 py-1 rounded border border-zinc-800"
+                                  className="w-full bg-[#0C1524] text-[11px] text-[#00A859] px-2 py-1 rounded border border-[#213559]"
                                 >
-                                  <option value="PENDENTE">Pendente</option>
-                                  <option value="VALIDACAO">Validação</option>
-                                  <option value="EM_ANDAMENTO">Em Execução</option>
-                                  <option value="CONCLUIDO">Concluído</option>
+                                  <option value="PENDENTE">Mover: Pendente</option>
+                                  <option value="VALIDACAO">
+                                    Mover: Validação (Fred/Grupo)
+                                  </option>
+                                  <option value="EM_ANDAMENTO">Mover: Em Execução</option>
+                                  <option value="CONCLUIDO">Mover: Concluído</option>
                                 </select>
-                              </td>
-                              <td className="p-3.5 text-right">
-                                <div className="inline-flex items-center gap-2">
-                                  <button
-                                    type="button"
-                                    onClick={() => openEditTaskModal(task)}
-                                    className="text-zinc-400 hover:text-white"
-                                  >
-                                    <Edit3 className="w-4 h-4" />
-                                  </button>
-                                  <button
-                                    type="button"
-                                    onClick={() => handleDeleteTask(task.id)}
-                                    className="text-zinc-500 hover:text-rose-400"
-                                  >
-                                    <Trash2 className="w-4 h-4" />
-                                  </button>
-                                </div>
-                              </td>
-                            </tr>
+                              </div>
+                            </div>
                           ))}
-                        </tbody>
-                      </table>
-                    </div>
-                  )}
-                </div>
-              )}
-            </div>
-          )}
-
-          {/* ABA 4: INTEGRANTES EM ORDEM ALFABÉTICA */}
-          {activeTab === 'EQUIPE' && (
-            <div className="space-y-5">
-              <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
-                {sortedTeam.map((member) => {
-                  const isEditing = editingMemberId === member.id;
-                  const memberTasks = state.tasks.filter((t) =>
-                    t.assignee.toLowerCase().includes(member.name.toLowerCase())
-                  ).length;
-
-                  return (
-                    <div
-                      key={member.id}
-                      className={`rounded-xl bg-[#111115] border p-5 flex flex-col justify-between transition ${
-                        isEditing ? 'border-indigo-500/70' : 'border-zinc-800/90'
-                      }`}
-                    >
-                      <div className="space-y-4">
-                        <div className="flex items-start justify-between gap-3">
-                          <div className="flex items-center gap-3">
-                            <div className="w-10 h-10 rounded-full bg-zinc-800 border border-zinc-700 flex items-center justify-center text-xs font-bold text-zinc-200 shrink-0">
-                              {member.initials}
-                            </div>
-                            <div>
-                              <h3 className="text-sm font-semibold text-white">
-                                {member.name}
-                              </h3>
-                              <span className="inline-block text-[11px] text-zinc-400 mt-0.5">
-                                {member.focusArea || 'A definir em grupo'}
-                              </span>
-                            </div>
-                          </div>
-
-                          <button
-                            type="button"
-                            onClick={() =>
-                              setEditingMemberId(isEditing ? null : member.id)
-                            }
-                            className="inline-flex items-center gap-1 px-2.5 py-1 rounded-md bg-zinc-900 hover:bg-zinc-800 text-[11px] text-zinc-300 border border-zinc-800 transition"
-                          >
-                            {isEditing ? (
-                              <>
-                                <Check className="w-3 h-3 text-emerald-400" /> Salvar
-                              </>
-                            ) : (
-                              <>
-                                <Edit3 className="w-3 h-3" /> Definir Foco
-                              </>
-                            )}
-                          </button>
                         </div>
-
-                        {isEditing ? (
-                          <div className="space-y-3 pt-2 border-t border-zinc-800/80 text-xs">
-                            <div>
-                              <label className="block text-[10px] font-mono uppercase text-zinc-400 mb-1">
-                                Frente / Atuação (definida pelo grupo)
-                              </label>
-                              <input
-                                type="text"
-                                value={member.focusArea}
-                                onChange={(e) =>
-                                  handleUpdateMember(member.id, {
-                                    focusArea: e.target.value
-                                  })
-                                }
-                                placeholder="Ex: Unity 3D, Integração, Documentação..."
-                                className="w-full bg-[#09090b] border border-zinc-800 rounded-lg px-2.5 py-1.5 text-white"
-                              />
-                            </div>
-
-                            <div>
-                              <label className="block text-[10px] font-mono uppercase text-zinc-400 mb-1">
-                                Notas / Observações
-                              </label>
-                              <textarea
-                                rows={2}
-                                value={member.notes}
-                                onChange={(e) =>
-                                  handleUpdateMember(member.id, {
-                                    notes: e.target.value
-                                  })
-                                }
-                                placeholder="Anotações livres..."
-                                className="w-full bg-[#09090b] border border-zinc-800 rounded-lg px-2.5 py-1.5 text-white"
-                              />
-                            </div>
-
-                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
-                              <div>
-                                <label className="block text-[10px] font-mono uppercase text-zinc-400 mb-1">
-                                  GitHub URL
-                                </label>
-                                <input
-                                  type="text"
-                                  value={member.github || ''}
-                                  onChange={(e) =>
-                                    handleUpdateMember(member.id, {
-                                      github: e.target.value
-                                    })
-                                  }
-                                  placeholder="https://github.com/..."
-                                  className="w-full bg-[#09090b] border border-zinc-800 rounded-lg px-2.5 py-1.5 text-white font-mono text-[11px]"
-                                />
-                              </div>
-                              <div>
-                                <label className="block text-[10px] font-mono uppercase text-zinc-400 mb-1">
-                                  E-mail / Contato
-                                </label>
-                                <input
-                                  type="text"
-                                  value={member.email || ''}
-                                  onChange={(e) =>
-                                    handleUpdateMember(member.id, {
-                                      email: e.target.value
-                                    })
-                                  }
-                                  placeholder="email@exemplo.com"
-                                  className="w-full bg-[#09090b] border border-zinc-800 rounded-lg px-2.5 py-1.5 text-white text-[11px]"
-                                />
-                              </div>
-                            </div>
-                          </div>
-                        ) : (
-                          <p className="text-xs text-zinc-400 leading-relaxed min-h-[36px]">
-                            {member.notes ||
-                              'Clique em "Definir Foco" para anotar o que ficou combinado para este integrante.'}
-                          </p>
-                        )}
-                      </div>
-
-                      <div className="pt-3 mt-4 border-t border-zinc-800/80 flex items-center justify-between text-xs">
-                        <div className="flex items-center gap-3">
-                          {member.github ? (
-                            <a
-                              href={member.github}
-                              target="_blank"
-                              rel="noreferrer"
-                              className="inline-flex items-center gap-1 font-mono text-zinc-300 hover:text-white"
-                            >
-                              <ExternalLink className="w-3.5 h-3.5" />
-                              {member.github.replace('https://github.com/', '@')}
-                            </a>
-                          ) : (
-                            <span className="text-[11px] text-zinc-500">
-                              Sem GitHub vinculado
-                            </span>
-                          )}
-                        </div>
-
-                        <span className="text-[11px] font-mono text-zinc-400">
-                          {memberTasks} {memberTasks === 1 ? 'tarefa' : 'tarefas'}
-                        </span>
-                      </div>
+                      )}
                     </div>
                   );
                 })}
               </div>
-            </div>
-          )}
-        </main>
-      </div>
+            ) : (
+              /* VISÃO EM LISTA */
+              <div className="bg-[#0C1524] border border-[#1B2B48] rounded-2xl overflow-hidden">
+                <div className="overflow-x-auto">
+                  <table className="w-full text-left border-collapse text-xs">
+                    <thead>
+                      <tr className="bg-[#111D32] text-slate-300 border-b border-[#1B2B48]">
+                        <th className="p-3.5">Tarefa</th>
+                        <th className="p-3.5">Etapa</th>
+                        <th className="p-3.5">Responsável</th>
+                        <th className="p-3.5">Status</th>
+                        <th className="p-3.5 text-right">Ações</th>
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y divide-[#1B2B48]">
+                      {filteredTasks.map((task) => (
+                        <tr key={task.id} className="hover:bg-[#111D32]/60">
+                          <td className="p-3.5 font-semibold text-white max-w-md">
+                            {task.title}
+                            {task.notes && (
+                              <span className="block text-[11px] text-slate-400 font-normal mt-0.5">
+                                {task.notes}
+                              </span>
+                            )}
+                          </td>
+                          <td className="p-3.5 font-mono text-[#00A859]">
+                            {task.stage}
+                          </td>
+                          <td className="p-3.5">
+                            <select
+                              value={task.assignee}
+                              onChange={(e) =>
+                                handleTaskAssigneeChange(task.id, e.target.value)
+                              }
+                              className="bg-[#111D32] text-xs text-sky-300 px-2.5 py-1.5 rounded-lg border border-[#213559]"
+                            >
+                              <option value="A definir pelo grupo">
+                                A definir pelo grupo
+                              </option>
+                              {sortedTeam.map((m) => (
+                                <option key={m.id} value={m.name}>
+                                  {m.name}
+                                </option>
+                              ))}
+                            </select>
+                          </td>
+                          <td className="p-3.5">
+                            <select
+                              value={task.status}
+                              onChange={(e) =>
+                                handleTaskStatusChange(
+                                  task.id,
+                                  e.target.value as TaskStatus
+                                )
+                              }
+                              className="bg-[#111D32] text-xs text-slate-200 px-2.5 py-1.5 rounded-lg border border-[#213559]"
+                            >
+                              <option value="PENDENTE">Pendente</option>
+                              <option value="VALIDACAO">Validação</option>
+                              <option value="EM_ANDAMENTO">Em Execução</option>
+                              <option value="CONCLUIDO">Concluído</option>
+                            </select>
+                          </td>
+                          <td className="p-3.5 text-right">
+                            <div className="inline-flex items-center gap-2">
+                              <button
+                                type="button"
+                                onClick={() => openEditTaskModal(task)}
+                                className="text-slate-400 hover:text-sky-300"
+                              >
+                                <Edit3 className="w-4 h-4"/>
+                              </button>
+                              <button
+                                type="button"
+                                onClick={() => handleDeleteTask(task.id)}
+                                className="text-slate-500 hover:text-rose-400"
+                              >
+                                <Trash2 className="w-4 h-4"/>
+                              </button>
+                            </div>
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            )}
+          </div>
+        )}
 
-      {/* MODAL DE TAREFA */}
+        {/* ABA 4: EQUIPE GT_SPLICE (A-Z) */}
+        {activeTab === 'EQUIPE' && (
+          <div className="space-y-6">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+              <div>
+                <h3 className="text-base font-bold text-white">
+                  Integrantes do Grupo GT_Splice Facens (Ordem Alfabética)
+                </h3>
+                <p className="text-xs text-slate-400">
+                  Sem cargos pré-definidos. Clique em Editar em cada card para registrar o foco de atuação combinado pelo grupo.
+                </p>
+              </div>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
+              {sortedTeam.map((member) => {
+                const isEditing = editingMemberId === member.id;
+                return (
+                  <div
+                    key={member.id}
+                    className={`bg-[#0C1524] border rounded-2xl p-5 flex flex-col justify-between transition ${
+                      isEditing
+                        ? 'border-[#00A859] ring-1 ring-[#00A859]/30'
+                        : 'border-[#1B2B48]'
+                    }`}
+                  >
+                    <div>
+                      <div className="flex items-start justify-between gap-2 mb-3">
+                        <h4 className="text-base font-bold text-white">{member.name}</h4>
+                        <button
+                          type="button"
+                          onClick={() =>
+                            setEditingMemberId(isEditing ? null : member.id)
+                          }
+                          className={`flex items-center gap-1 text-[11px] px-2.5 py-1 rounded-lg border transition font-medium ${
+                            isEditing
+                              ? 'bg-[#00A859]/20 text-emerald-300 border-[#00A859]/50'
+                              : 'bg-[#111D32] text-slate-300 hover:text-white border-[#213559]'
+                          }`}
+                        >
+                          {isEditing ? (
+                            <>
+                              <Check className="w-3.5 h-3.5"/> Concluir
+                            </>
+                          ) : (
+                            <>
+                              <Edit3 className="w-3.5 h-3.5"/> Editar
+                            </>
+                          )}
+                        </button>
+                      </div>
+
+                      {isEditing ? (
+                        <div className="space-y-3 pt-1">
+                          <div>
+                            <label className="block text-[10px] uppercase font-mono text-slate-400 mb-1">
+                              Atuação / Foco (definido pelo grupo)
+                            </label>
+                            <textarea
+                              rows={3}
+                              value={member.notes}
+                              onChange={(e) =>
+                                handleUpdateMember(member.id, { notes: e.target.value })
+                              }
+                              placeholder="Descreva o foco ou tarefas deste integrante..."
+                              className="w-full bg-[#111D32] border border-[#213559] rounded-lg px-2.5 py-1.5 text-xs text-white"
+                            />
+                          </div>
+
+                          <div className="space-y-2">
+                            <div>
+                              <label className="block text-[10px] uppercase font-mono text-slate-400 mb-1">
+                                GitHub URL
+                              </label>
+                              <input
+                                type="text"
+                                value={member.github || ''}
+                                onChange={(e) =>
+                                  handleUpdateMember(member.id, {
+                                    github: e.target.value
+                                  })
+                                }
+                                placeholder="https://github.com/..."
+                                className="w-full bg-[#111D32] border border-[#213559] rounded-lg px-2.5 py-1.5 text-xs text-white"
+                              />
+                            </div>
+                            <div>
+                              <label className="block text-[10px] uppercase font-mono text-slate-400 mb-1">
+                                E-mail
+                              </label>
+                              <input
+                                type="email"
+                                value={member.email || ''}
+                                onChange={(e) =>
+                                  handleUpdateMember(member.id, {
+                                    email: e.target.value
+                                  })
+                                }
+                                placeholder="nome@exemplo.com"
+                                className="w-full bg-[#111D32] border border-[#213559] rounded-lg px-2.5 py-1.5 text-xs text-white"
+                              />
+                            </div>
+                          </div>
+                        </div>
+                      ) : (
+                        <p className="text-xs text-slate-300 leading-relaxed mb-4">
+                          {member.notes}
+                        </p>
+                      )}
+                    </div>
+
+                    {!isEditing && (
+                      <div className="mt-4 flex flex-wrap items-center gap-3 pt-3 border-t border-[#1B2B48]">
+                        {member.github ? (
+                          <a
+                            href={member.github}
+                            target="_blank"
+                            rel="noreferrer"
+                            className="inline-flex items-center gap-1.5 text-xs text-[#00A859] hover:text-emerald-300 font-mono"
+                          >
+                            <ExternalLink className="w-3.5 h-3.5"/>
+                            {member.github.replace('https://github.com/', '@')}
+                          </a>
+                        ) : (
+                          <span className="text-[11px] font-mono text-slate-500">
+                            GitHub não informado
+                          </span>
+                        )}
+                        {member.email && (
+                          <span className="text-[11px] font-mono text-slate-400">
+                            {member.email}
+                          </span>
+                        )}
+                      </div>
+                    )}
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+        )}
+      </main>
+
+      {/* MODAL PARA CRIAR / EDITAR TAREFA */}
       <dialog
         ref={taskDialogRef}
-        className="bg-[#111115] text-zinc-100 border border-zinc-800 rounded-xl max-w-md w-full p-6 shadow-2xl"
+        className="bg-[#0C1524] text-slate-100 border border-[#213559] rounded-2xl max-w-md w-full p-6 shadow-2xl"
       >
-        <h3 className="text-base font-semibold text-white mb-4">
-          {editingTaskId ? 'Editar Tarefa' : 'Nova Tarefa do Grupo'}
+        <h3 className="text-lg font-bold text-white mb-4">
+          {editingTaskId ? 'Editar Tarefa' : 'Nova Tarefa do Plano de Trabalho'}
         </h3>
         <form onSubmit={handleSaveTask} className="space-y-3.5 text-xs">
           <div>
-            <label className="block text-zinc-400 mb-1">Descrição da Tarefa</label>
+            <label className="block text-slate-400 mb-1">Título da Tarefa</label>
             <input
               type="text"
               required
               value={taskTitle}
               onChange={(e) => setTaskTitle(e.target.value)}
-              placeholder="Ex: Validar modelos do SIGABEM com o Prof. Fred"
-              className="w-full bg-[#09090b] border border-zinc-800 rounded-lg px-3 py-2 text-white"
+              placeholder="Ex: Validar inventário SIGABEM com o Prof. Fred"
+              className="w-full bg-[#111D32] border border-[#213559] rounded-lg px-3 py-2 text-white"
+            />
+          </div>
+
+          <div>
+            <label className="block text-slate-400 mb-1">Etapa / Fase</label>
+            <input
+              type="text"
+              required
+              value={taskStage}
+              onChange={(e) => setTaskStage(e.target.value)}
+              placeholder="Ex: Entrega 1: Janeiro (MR Browser)"
+              className="w-full bg-[#111D32] border border-[#213559] rounded-lg px-3 py-2 text-white"
             />
           </div>
 
           <div className="grid grid-cols-2 gap-3">
             <div>
-              <label className="block text-zinc-400 mb-1">Etapa</label>
-              <input
-                type="text"
-                value={taskStage}
-                onChange={(e) => setTaskStage(e.target.value)}
-                placeholder="Ex: Entrega 1 (Janeiro)"
-                className="w-full bg-[#09090b] border border-zinc-800 rounded-lg px-3 py-2 text-white"
-              />
+              <label className="block text-slate-400 mb-1">Responsável</label>
+              <select
+                value={taskAssignee}
+                onChange={(e) => setTaskAssignee(e.target.value)}
+                className="w-full bg-[#111D32] border border-[#213559] rounded-lg px-2.5 py-2 text-white"
+              >
+                <option value="A definir pelo grupo">A definir pelo grupo</option>
+                {sortedTeam.map((m) => (
+                  <option key={m.id} value={m.name}>
+                    {m.name}
+                  </option>
+                ))}
+              </select>
             </div>
 
             <div>
-              <label className="block text-zinc-400 mb-1">Status</label>
+              <label className="block text-slate-400 mb-1">Status</label>
               <select
                 value={taskStatus}
                 onChange={(e) => setTaskStatus(e.target.value as TaskStatus)}
-                className="w-full bg-[#09090b] border border-zinc-800 rounded-lg px-2.5 py-2 text-white"
+                className="w-full bg-[#111D32] border border-[#213559] rounded-lg px-2.5 py-2 text-white"
               >
                 <option value="PENDENTE">Pendente</option>
-                <option value="VALIDACAO">Validação (Fred / Grupo)</option>
+                <option value="VALIDACAO">Validação (Fred/Grupo)</option>
                 <option value="EM_ANDAMENTO">Em Execução</option>
                 <option value="CONCLUIDO">Concluído</option>
               </select>
@@ -1270,136 +1275,119 @@ export default function GTSpliceWorkspace() {
           </div>
 
           <div>
-            <label className="block text-zinc-400 mb-1">Responsável</label>
-            <select
-              value={taskAssignee}
-              onChange={(e) => setTaskAssignee(e.target.value)}
-              className="w-full bg-[#09090b] border border-zinc-800 rounded-lg px-2.5 py-2 text-white"
-            >
-              <option value="Em aberto">Em aberto (definir em grupo)</option>
-              {sortedTeam.map((m) => (
-                <option key={m.id} value={m.name}>
-                  {m.name}
-                </option>
-              ))}
-            </select>
-          </div>
-
-          <div>
-            <label className="block text-zinc-400 mb-1">Observações Técnicas</label>
+            <label className="block text-slate-400 mb-1">Notas e Detalhes</label>
             <textarea
               rows={3}
               value={taskNotes}
               onChange={(e) => setTaskNotes(e.target.value)}
-              placeholder="Detalhes adicionais..."
-              className="w-full bg-[#09090b] border border-zinc-800 rounded-lg px-3 py-2 text-white"
+              placeholder="Detalhes técnicos, testes na Sala D29..."
+              className="w-full bg-[#111D32] border border-[#213559] rounded-lg px-3 py-2 text-white"
             />
           </div>
 
           <div className="flex justify-end gap-2 pt-3">
             <button
               type="button"
-              onClick={() => taskDialogRef.current?.close()}
-              className="px-4 py-2 rounded-lg bg-zinc-800 text-zinc-300 hover:bg-zinc-700"
+              onClick={closeTaskModal}
+              className="px-4 py-2 rounded-lg bg-[#111D32] text-slate-300 hover:bg-[#162642]"
             >
               Cancelar
             </button>
             <button
               type="submit"
-              className="px-4 py-2 rounded-lg bg-zinc-100 text-zinc-950 font-semibold hover:bg-white"
+              className="px-4 py-2 rounded-lg bg-[#00A859] text-slate-950 font-semibold hover:bg-emerald-400"
             >
-              Salvar
+              Salvar Tarefa
             </button>
           </div>
         </form>
       </dialog>
 
-      {/* MODAL DE MATERIAL DE ESTUDO */}
+      {/* MODAL PARA NOVO MATERIAL DE ESTUDO */}
       <dialog
-        ref={matDialogRef}
-        className="bg-[#111115] text-zinc-100 border border-zinc-800 rounded-xl max-w-md w-full p-6 shadow-2xl"
+        ref={materialDialogRef}
+        className="bg-[#0C1524] text-slate-100 border border-[#213559] rounded-2xl max-w-md w-full p-6 shadow-2xl"
       >
-        <h3 className="text-base font-semibold text-white mb-4">
+        <h3 className="text-lg font-bold text-white mb-4">
           Adicionar Material de Estudo
         </h3>
         <form onSubmit={handleSaveMaterial} className="space-y-3.5 text-xs">
           <div>
-            <label className="block text-zinc-400 mb-1">Título do Material</label>
+            <label className="block text-slate-400 mb-1">Título do Material</label>
             <input
               type="text"
               required
               value={matTitle}
               onChange={(e) => setMatTitle(e.target.value)}
-              placeholder="Ex: Repositório Tomita & Gabriel / Cena Unity"
-              className="w-full bg-[#09090b] border border-zinc-800 rounded-lg px-3 py-2 text-white"
+              placeholder="Ex: Repositório VR / PDF Capacitação Splice"
+              className="w-full bg-[#111D32] border border-[#213559] rounded-lg px-3 py-2 text-white"
             />
           </div>
 
           <div className="grid grid-cols-2 gap-3">
             <div>
-              <label className="block text-zinc-400 mb-1">Categoria</label>
-              <select
-                value={matCategory}
-                onChange={(e) =>
-                  setMatCategory(e.target.value as StudyMaterial['category'])
-                }
-                className="w-full bg-[#09090b] border border-zinc-800 rounded-lg px-2.5 py-2 text-white"
-              >
-                <option value="DOSSIE">Dossiê Técnico</option>
-                <option value="APRESENTACAO">Apresentação / PDF</option>
-                <option value="REPOSITORIO">Repositório GitHub</option>
-                <option value="HARDWARE">Hardware / Óptica</option>
-                <option value="ATA">Ata / Kickoff</option>
-              </select>
+              <label className="block text-slate-400 mb-1">Tipo</label>
+              <input
+                type="text"
+                value={matType}
+                onChange={(e) => setMatType(e.target.value)}
+                placeholder="Ex: Repositório, PDF, Cena 3D"
+                className="w-full bg-[#111D32] border border-[#213559] rounded-lg px-3 py-2 text-white"
+              />
             </div>
 
             <div>
-              <label className="block text-zinc-400 mb-1">Compartilhado por</label>
-              <input
-                type="text"
+              <label className="block text-slate-400 mb-1">Compartilhado por</label>
+              <select
                 value={matSharedBy}
                 onChange={(e) => setMatSharedBy(e.target.value)}
-                placeholder="Nome"
-                className="w-full bg-[#09090b] border border-zinc-800 rounded-lg px-3 py-2 text-white"
-              />
+                className="w-full bg-[#111D32] border border-[#213559] rounded-lg px-2.5 py-2 text-white"
+              >
+                <option value="Equipe GT_Splice">Equipe GT_Splice</option>
+                {sortedTeam.map((m) => (
+                  <option key={m.id} value={m.name}>
+                    {m.name}
+                  </option>
+                ))}
+              </select>
             </div>
           </div>
 
           <div>
-            <label className="block text-zinc-400 mb-1">Link ou Localização</label>
+            <label className="block text-slate-400 mb-1">Referência ou URL</label>
             <input
               type="text"
-              value={matUrl}
-              onChange={(e) => setMatUrl(e.target.value)}
-              placeholder="https://... ou local no Teams/WhatsApp"
-              className="w-full bg-[#09090b] border border-zinc-800 rounded-lg px-3 py-2 text-white"
+              value={matRefOrUrl}
+              onChange={(e) => setMatRefOrUrl(e.target.value)}
+              placeholder="https://... ou nome do arquivo"
+              className="w-full bg-[#111D32] border border-[#213559] rounded-lg px-3 py-2 text-white"
             />
           </div>
 
           <div>
-            <label className="block text-zinc-400 mb-1">Notas sobre o conteúdo</label>
+            <label className="block text-slate-400 mb-1">Notas & Relevância</label>
             <textarea
               rows={2}
               value={matNotes}
               onChange={(e) => setMatNotes(e.target.value)}
-              placeholder="O que podemos aproveitar deste arquivo..."
-              className="w-full bg-[#09090b] border border-zinc-800 rounded-lg px-3 py-2 text-white"
+              placeholder="Como esse material apoia o projeto na Unity..."
+              className="w-full bg-[#111D32] border border-[#213559] rounded-lg px-3 py-2 text-white"
             />
           </div>
 
           <div className="flex justify-end gap-2 pt-3">
             <button
               type="button"
-              onClick={() => matDialogRef.current?.close()}
-              className="px-4 py-2 rounded-lg bg-zinc-800 text-zinc-300 hover:bg-zinc-700"
+              onClick={() => materialDialogRef.current?.close()}
+              className="px-4 py-2 rounded-lg bg-[#111D32] text-slate-300 hover:bg-[#162642]"
             >
               Cancelar
             </button>
             <button
               type="submit"
-              className="px-4 py-2 rounded-lg bg-zinc-100 text-zinc-950 font-semibold hover:bg-white"
+              className="px-4 py-2 rounded-lg bg-[#00A859] text-slate-950 font-semibold hover:bg-emerald-400"
             >
-              Adicionar
+              Salvar Material
             </button>
           </div>
         </form>

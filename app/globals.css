@@ -7,9 +7,8 @@
 }
 
 body {
-  background-color: #09090b;
-  color: #f4f4f5;
-  font-feature-settings: "cv02", "cv03", "cv04", "cv11";
+  background-color: #070D17;
+  color: #F1F5F9;
 }
 
 dialog:modal {
@@ -17,6 +16,8 @@ dialog:modal {
 }
 
 dialog::backdrop {
-  background-color: rgba(0, 0, 0, 0.75);
+  overflow: hidden;
+  overscroll-behavior: contain;
+  background-color: rgba(4, 9, 18, 0.80);
   backdrop-filter: blur(4px);
 }

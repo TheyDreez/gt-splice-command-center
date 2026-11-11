@@ -1,7 +1,7 @@
 import { ProjectState } from '@/types/project';
 import { INITIAL_PROJECT_STATE } from './seed-data';
 
-const STORAGE_KEY = 'gt_splice_workspace_v5';
+const STORAGE_KEY = 'gt_splice_cco_v6';
 
 export function loadProjectState(): ProjectState {
   if (typeof window === 'undefined') return INITIAL_PROJECT_STATE;
@@ -12,7 +12,8 @@ export function loadProjectState(): ProjectState {
       return INITIAL_PROJECT_STATE;
     }
     return JSON.parse(raw) as ProjectState;
-  } catch {
+  } catch (err) {
+    console.error('Erro ao carregar estado local:', err);
     return INITIAL_PROJECT_STATE;
   }
 }
@@ -33,8 +34,8 @@ export async function saveProjectState(state: ProjectState): Promise<void> {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(updated)
       });
-    } catch {
-      // Mantém salvo localmente
+    } catch (e) {
+      console.warn('Falha ao sincronizar com nuvem (mantido em localStorage):', e);
     }
   }
 }
@@ -50,10 +51,13 @@ export function exportStateAsJson(state: ProjectState): void {
   const dataStr =
     'data:text/json;charset=utf-8,' +
     encodeURIComponent(JSON.stringify(state, null, 2));
-  const a = document.createElement('a');
-  a.setAttribute('href', dataStr);
-  a.setAttribute('download', `gt_splice_workspace_${new Date().toISOString().slice(0, 10)}.json`);
-  document.body.appendChild(a);
-  a.click();
-  a.remove();
+  const downloadAnchor = document.createElement('a');
+  downloadAnchor.setAttribute('href', dataStr);
+  downloadAnchor.setAttribute(
+    'download',
+    `gt_splice_plano_trabalho_${new Date().toISOString().slice(0, 10)}.json`
+  );
+  document.body.appendChild(downloadAnchor);
+  downloadAnchor.click();
+  downloadAnchor.remove();
 }
