@@ -4,117 +4,206 @@ export const INITIAL_PROJECT_STATE: ProjectState = {
   lastUpdated: new Date().toISOString(),
   goals: [
     {
-      id: 'g-1',
+      id: 'g-jan',
+      badge: 'ETAPA 1 • JANEIRO',
       title: 'Escopo da Primeira Entrega (Janeiro)',
+      subtitle: 'Meta principal inegociável alinhada no kickoff de 09/11',
       items: [
-        'Ambiente do campus em Realidade Mista (MR), rodando em browser.',
-        'Foco inicial: explorar o FRED (Unity) e construir o artefato de realidade mista ou virtual (MR preferida por ser mais visual e impactante).',
-        'Inserção dos pontos clicáveis (postes e câmeras) com destaque no modelo 3D.',
-        'Câmeras fornecidas pela Splice, com definição conjunta dos pontos de instalação.',
-        'Montar o Plano de Trabalho como primeira entrega (datas intermediárias flexíveis; data final inegociável).'
+        {
+          id: 'gi-1',
+          text: 'Ambiente do campus da Facens em Realidade Mista (MR), rodando direto em browser.',
+          completed: false
+        },
+        {
+          id: 'gi-2',
+          text: 'Explorar o FRED / Unity para construir o artefato (Realidade Mista preferida por ser mais visual e impactante).',
+          completed: false
+        },
+        {
+          id: 'gi-3',
+          text: 'Inserção dos pontos clicáveis (postes e câmeras) com destaque visual no modelo 3D.',
+          completed: false
+        },
+        {
+          id: 'gi-4',
+          text: 'Definir em conjunto com a Splice os pontos de instalação das câmeras fornecidas.',
+          completed: false
+        },
+        {
+          id: 'gi-5',
+          text: 'Estruturar o Plano de Trabalho do grupo como primeira entrega (datas intermediárias flexíveis; data final fixa).',
+          completed: false
+        }
       ]
     },
     {
-      id: 'g-2',
-      title: 'Aproveitamento do Trabalho Anterior e Validação',
+      id: 'g-inv',
+      badge: 'INVENTÁRIO & UNITY',
+      title: 'Aproveitamento do Trabalho Anterior',
+      subtitle: 'Cruzamento técnico antes de iniciar a codificação',
       items: [
-        'Material da capacitação Splice (sensores, realidade virtual, acesso em tempo real) e acervo do LIGA podem ser reaproveitados.',
-        'Fazer inventário do que foi desenvolvido e cruzar com o que será usado na Unity.',
-        'Validar compatibilidade técnica com a Unity junto ao Prof. Fred.',
-        'Agendar reunião de validação e aprovação antes de avançar no desenvolvimento.'
+        {
+          id: 'gi-6',
+          text: 'Fazer inventário do material da 1ª capacitação Splice (sensores, VR, acesso em tempo real) e do acervo do LIGA.',
+          completed: false
+        },
+        {
+          id: 'gi-7',
+          text: 'Cruzar o que foi desenvolvido anteriormente com o que será utilizado na engine Unity.',
+          completed: false
+        },
+        {
+          id: 'gi-8',
+          text: 'Validar compatibilidade técnica com a Unity junto ao Prof. Fred.',
+          completed: false
+        },
+        {
+          id: 'gi-9',
+          text: 'Realizar reunião de validação e aprovação do plano antes de avançar no desenvolvimento.',
+          completed: false
+        }
       ]
     },
     {
-      id: 'g-3',
-      title: 'Otimização 3D e Organização',
+      id: 'g-opt',
+      badge: 'PERFORMANCE 3D & INFRA',
+      title: 'Otimização do Modelo 3D & Organização',
+      subtitle: 'Balanceamento entre qualidade gráfica e fluidez nos óculos/browser',
       items: [
-        'Principal risco de performance: quantidade de polígonos (reduzir árvores do entorno se pesar nos óculos e recortar área mantendo foco no viário).',
-        'Melhorias desejadas (não obrigatórias): sombras (balanceando processamento), animações de carros/pedestres em movimento e sons ambiente.',
-        'Espaços disponíveis na Facens: Sala D29 (máquina mais potente), Sala 13 e bancada com monitores.',
-        'Canal GT_Splice no Microsoft Teams como ponto central de comunicação e incentivo ao trabalho remoto.'
+        {
+          id: 'gi-10',
+          text: 'Mitigar risco de polígonos: reduzir árvores do entorno se pesar nos óculos e recortar a maquete mantendo foco no viário.',
+          completed: false
+        },
+        {
+          id: 'gi-11',
+          text: 'Melhorias desejáveis (não obrigatórias): adicionar sombras (avaliando custo de processamento), animações de carros/pedestres e som ambiente.',
+          completed: false
+        },
+        {
+          id: 'gi-12',
+          text: 'Utilizar espaços disponíveis: Sala D29 (máquina mais potente), Sala 13 e bancada com monitores extras.',
+          completed: false
+        },
+        {
+          id: 'gi-13',
+          text: 'Centralizar comunicação no canal GT_Splice no Microsoft Teams e manter rotina colaborativa remota.',
+          completed: true
+        }
       ]
     },
     {
-      id: 'g-4',
-      title: 'Etapa 2 (Posterior a Janeiro)',
+      id: 'g-etapa2',
+      badge: 'ETAPA 2 • PÓS-JANEIRO',
+      title: 'Conexão Real-Time, 5G e Inteligência Artificial',
+      subtitle: 'Evolução posterior à entrega do ambiente MR de janeiro',
       items: [
-        'Conexão real-time com as câmeras da Splice (avaliando uso de roteadores 5G na mesma rede para baixa latência).',
-        'Dados enriquecidos além da imagem: vestimenta, faixa etária e gênero estimado.',
-        'Estatísticas e IA integradas com apoio do professor de IA.'
+        {
+          id: 'gi-14',
+          text: 'Conectar feed das câmeras da Splice em tempo real no clique do spot (avaliando roteadores 5G na mesma rede para baixa latência).',
+          completed: false
+        },
+        {
+          id: 'gi-15',
+          text: 'Extrair dados enriquecidos além da imagem: vestimenta, faixa etária e gênero estimado.',
+          completed: false
+        },
+        {
+          id: 'gi-16',
+          text: 'Integrar estatísticas e modelos de IA na etapa 2 com apoio do professor de IA.',
+          completed: false
+        }
       ]
     }
   ],
   materials: [
     {
-      id: 'm-1',
-      title: 'Resumo e Transcrição da Reunião de Kickoff (09/11)',
-      type: 'Ata / Transcrição',
-      sharedBy: 'Ana Paula',
-      referenceOrUrl: 'Grupo WhatsApp / Canal GT_Splice no Teams',
-      notes: 'Diretrizes iniciais do desafio Splice, escopo de janeiro e orientações de uso da Unity.'
+      id: 'mat-1',
+      title: 'Resumo e Transcrição Completa do Kickoff (09/11)',
+      category: 'ATA',
+      type: 'Ata & Transcrição',
+      sharedBy: 'Ana Paula Batista',
+      referenceOrUrl: 'Grupo WhatsApp GT_Splice Facens / Canal Teams GT_Splice',
+      notes: 'Contém todas as diretrizes de escopo de janeiro, uso da Unity com o Fred, salas D29/13 e divisão em 2 etapas.'
     },
     {
-      id: 'm-2',
-      title: 'SIGABEM_MalhaViva_VR.pptx e SIGABEM: Central de Controle de Mobilidade.pdf',
-      type: 'Apresentação / PDF',
+      id: 'mat-2',
+      title: 'SIGABEM: Central de Controle de Mobilidade & Malha Viva VR',
+      category: 'APRESENTACAO',
+      type: 'PPTX & PDF (1ª Capacitação)',
       sharedBy: 'Vânia',
-      referenceOrUrl: 'Arquivos compartilhados em 10/11 (inclui referência ao GitHub do Tomita e Gabriel)',
-      notes: 'Projeto da Malha Viva de Sorocaba desenvolvido na primeira capacitação da Splice.'
+      referenceOrUrl: 'SIGABEM_MalhaViva_VR.pptx / SIGABEM: Central de Controle de Mobilidade.pdf',
+      notes: 'Projeto de Sorocaba proposto para a Splice no 1º semestre. Inclui a parte de app e referência ao GitHub (Tomita e Gabriel) com VR e 5G.'
     },
     {
-      id: 'm-3',
+      id: 'mat-3',
       title: 'Dossiê Consolidado de Fontes, Referências e Imagens (TIC 51)',
-      type: 'Documento Técnico (PDF)',
+      category: 'DOSSIE',
+      type: 'Caderno Técnico (PDF)',
       sharedBy: 'André / Ana Paula / Helton',
       referenceOrUrl: 'Dossie_Consolidado_Referencias_Imagens_TIC51.pdf',
-      notes: 'Referências verificadas sobre Digital Shadow vs. Digital Twin, SIIS/SIS, WebXR, Three.js e LGPD.'
+      notes: '45 URLs auditadas: arquitetura Digital Shadow vs. Digital Twin, SIIS/SIS Splice, WebXR, Three.js, NIST e LGPD.'
     },
     {
-      id: 'm-4',
-      title: 'Aplicativo Geo Capital Engine v3 e Omni-EcoRescue-Pitch.pdf',
-      type: 'Repositório GitHub / PDF',
-      sharedBy: 'Helton',
+      id: 'mat-4',
+      title: 'Geo Capital Engine v3 & Pitch Omni-EcoRescue',
+      category: 'REPOSITORIO',
+      type: 'GitHub & PDF',
+      sharedBy: 'Helton Rosa da Silva Abadia',
       referenceOrUrl: 'https://github.com/LeonardoGMendoza/aplicativo-geo-capital-engine-v3',
-      notes: 'Projeto compartilhado para referência técnica da equipe.'
+      notes: 'Repositório de engenharia geoespacial e arquivo Omni-EcoRescue-Pitch.pdf compartilhados para referência da equipe.'
     },
     {
-      id: 'm-5',
-      title: 'Referência de Equipamento Óptico / Câmera (TPCAM-H20S)',
-      type: 'Especificação Técnica',
-      sharedBy: 'André',
+      id: 'mat-5',
+      title: 'Câmera Óptica/PTZ TPCAM-H20S (Gavião MPO3)',
+      category: 'HARDWARE',
+      type: 'Especificação de Equipamento',
+      sharedBy: 'André Rogério da Silva Filho',
       referenceOrUrl: 'https://comlaser.net/tpcam-h20s-gavio-mpo3/',
-      notes: 'Exemplo prático de equipamento óptico ajustado para operação e licitações.'
+      notes: 'Referência real de projeto óptico importado e adaptado internamente para atender requisitos de licitações.'
     }
   ],
+  // Inicia vazio para o próprio grupo criar ou puxar das metas oficiais com 1 clique
   tasks: [],
+  // Ordem estritamente alfabética, sem cargos pré-impostos
   team: [
     {
       id: 'ana',
       name: 'Ana Paula Batista',
+      initials: 'AP',
       github: 'https://github.com/abatistaa',
       email: 'anapcb1308@gmail.com',
+      focusArea: 'A definir em grupo',
       notes: ''
     },
     {
       id: 'andre',
       name: 'André Rogério da Silva Filho',
+      initials: 'AF',
       github: 'https://github.com/TheyDreez',
+      focusArea: 'A definir em grupo',
       notes: ''
     },
     {
       id: 'cosmo',
       name: 'Cosmo',
+      initials: 'CO',
+      focusArea: 'A definir em grupo',
       notes: ''
     },
     {
       id: 'helton',
       name: 'Helton Rosa da Silva Abadia',
+      initials: 'HA',
       github: 'https://github.com/heltonrsnet-cpu',
+      focusArea: 'A definir em grupo',
       notes: ''
     },
     {
       id: 'vania',
       name: 'Vânia',
+      initials: 'VA',
+      focusArea: 'A definir em grupo',
       notes: ''
     }
   ]

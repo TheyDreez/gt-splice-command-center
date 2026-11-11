@@ -2,9 +2,9 @@ import type { Metadata } from 'next';
 import './globals.css';
 
 export const metadata: Metadata = {
-  title: 'GT_Splice Facens: Workspace',
+  title: 'GT_Splice Facens | Workspace & Plano de Trabalho (TIC 51)',
   description:
-    'Repositório de estudo, metas oficiais e plano de trabalho do grupo GT_Splice Facens (Residência TIC 51).',
+    'Plataforma de gestão de entregas, metas oficiais e acervo técnico do grupo GT_Splice Facens na Residência TIC 51.',
 };
 
 export default function RootLayout({
@@ -14,7 +14,7 @@ export default function RootLayout({
 }) {
   return (
     <html lang="pt-BR" className="dark">
-      <body className="antialiased selection:bg-neutral-800 selection:text-neutral-100">
+      <body className="antialiased selection:bg-indigo-500/30 selection:text-indigo-200">
         {children}
       </body>
     </html>
