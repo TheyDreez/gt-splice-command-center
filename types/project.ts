@@ -1,4 +1,4 @@
-export type TaskStatus = 'PENDENTE' | 'VALIDACAO' | 'EM_ANDAMENTO' | 'CONCLUIDO';
+export type TaskStatus = 'PENDENTE' | 'EM_ANDAMENTO' | 'CONCLUIDO';
 
 export interface ProjectTask {
   id: string;
