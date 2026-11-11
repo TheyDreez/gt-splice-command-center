@@ -1,7 +1,7 @@
 import { ProjectState } from '@/types/project';
 import { INITIAL_PROJECT_STATE } from './seed-data';
 
-const STORAGE_KEY = 'gt_splice_command_center_v2';
+const STORAGE_KEY = 'gt_splice_command_center_v3';
 
 export function loadProjectState(): ProjectState {
   if (typeof window === 'undefined') return INITIAL_PROJECT_STATE;
