@@ -25,7 +25,8 @@ import {
   Edit3,
   Radio,
   Eye,
-  Calendar
+  Calendar,
+  Check
 } from 'lucide-react';
 import {
   ProjectState,
@@ -35,7 +36,8 @@ import {
   TaskPriority,
   ValidationStatus,
   InventoryAsset,
-  CameraSpot
+  CameraSpot,
+  TeamMember
 } from '@/types/project';
 import { INITIAL_PROJECT_STATE } from '@/lib/seed-data';
 import {
@@ -105,15 +107,18 @@ export default function GTSpliceCommandCenter() {
   const [newTaskDesc, setNewTaskDesc] = useState('');
   const [newTaskPhase, setNewTaskPhase] = useState<TaskPhase>('FASE_1');
   const [newTaskPriority, setNewTaskPriority] = useState<TaskPriority>('OBRIGATORIA_JAN');
-  const [newTaskAssignee, setNewTaskAssignee] = useState('André Rogério da Silva Filho');
+  const [newTaskAssignee, setNewTaskAssignee] = useState('A definir pelo grupo');
 
   // Modal de Novo Ativo de Inventário (<dialog>)
   const assetDialogRef = useRef<HTMLDialogElement | null>(null);
   const [newAssetName, setNewAssetName] = useState('');
   const [newAssetOrigin, setNewAssetOrigin] = useState('');
-  const [newAssetOwner, setNewAssetOwner] = useState('André Filho');
+  const [newAssetOwner, setNewAssetOwner] = useState('Equipe GT_Splice');
   const [newAssetUse, setNewAssetUse] = useState('');
   const [newAssetNotes, setNewAssetNotes] = useState('');
+
+  // Edição inline nos cards da equipe
+  const [editingMemberId, setEditingMemberId] = useState<string | null>(null);
 
   // Spot selecionado no Mapa 2D Interativo do Viário
   const [activeSpotId, setActiveSpotId] = useState<string>('spot-1');
@@ -172,7 +177,7 @@ export default function GTSpliceCommandCenter() {
     setNewTaskDesc('');
     setNewTaskPhase('FASE_1');
     setNewTaskPriority('OBRIGATORIA_JAN');
-    setNewTaskAssignee('André Rogério da Silva Filho');
+    setNewTaskAssignee('A definir pelo grupo');
     taskDialogRef.current?.showModal();
   };
 
@@ -182,7 +187,7 @@ export default function GTSpliceCommandCenter() {
     setNewTaskDesc(task.description);
     setNewTaskPhase(task.phase);
     setNewTaskPriority(task.priority);
-    setNewTaskAssignee(task.assignees[0] || 'André Rogério da Silva Filho');
+    setNewTaskAssignee(task.assignees[0] || 'A definir pelo grupo');
     taskDialogRef.current?.showModal();
   };
 
@@ -196,6 +201,17 @@ export default function GTSpliceCommandCenter() {
       ...prev,
       tasks: prev.tasks.map((t) =>
         t.id === taskId ? { ...t, status: newStatus, updatedAt: new Date().toISOString() } : t
+      )
+    }));
+  };
+
+  const handleTaskAssigneeChange = (taskId: string, assignee: string) => {
+    updateState((prev) => ({
+      ...prev,
+      tasks: prev.tasks.map((t) =>
+        t.id === taskId
+          ? { ...t, assignees: [assignee], updatedAt: new Date().toISOString() }
+          : t
       )
     }));
   };
@@ -261,6 +277,15 @@ export default function GTSpliceCommandCenter() {
     }));
   };
 
+  const handleInventoryOwnerChange = (id: string, owner: string) => {
+    updateState((prev) => ({
+      ...prev,
+      inventory: prev.inventory.map((item) =>
+        item.id === id ? { ...item, owner } : item
+      )
+    }));
+  };
+
   const handleCreateAsset = (e: React.FormEvent) => {
     e.preventDefault();
     if (!newAssetName.trim()) return;
@@ -297,6 +322,15 @@ export default function GTSpliceCommandCenter() {
     }));
   };
 
+  const handleOptimizationOwnerChange = (id: string, owner: string) => {
+    updateState((prev) => ({
+      ...prev,
+      optimizations: prev.optimizations.map((opt) =>
+        opt.id === id ? { ...opt, owner } : opt
+      )
+    }));
+  };
+
   const handleSpotStatusChange = (
     id: string,
     model3DStatus: CameraSpot['model3DStatus']
@@ -304,6 +338,14 @@ export default function GTSpliceCommandCenter() {
     updateState((prev) => ({
       ...prev,
       spots: prev.spots.map((s) => (s.id === id ? { ...s, model3DStatus } : s))
+    }));
+  };
+
+  // Ações de Equipe (Edição Inline)
+  const handleUpdateTeamMember = (id: string, updates: Partial<TeamMember>) => {
+    updateState((prev) => ({
+      ...prev,
+      team: prev.team.map((m) => (m.id === id ? { ...m, ...updates } : m))
     }));
   };
 
@@ -719,17 +761,19 @@ export default function GTSpliceCommandCenter() {
                 </select>
 
                 <select
-                  aria-label="Filtrar por Integrante"
+                  aria-label="Filtrar por Integrante ou Responsável"
                   value={selectedMember}
                   onChange={(e) => setSelectedMember(e.target.value)}
                   className="bg-[#191C28] text-xs text-slate-200 px-3 py-2 rounded-lg border border-[#262B3D]"
                 >
-                  <option value="ALL">Todos os Integrantes</option>
-                  <option value="André">André Filho</option>
-                  <option value="Ana Paula">Ana Paula</option>
-                  <option value="Helton">Helton Abadia</option>
-                  <option value="Vânia">Vânia</option>
-                  <option value="Cosmo">Cosmo</option>
+                  <option value="ALL">Todos os Integrantes / Responsáveis</option>
+                  <option value="A definir">A definir pelo grupo</option>
+                  <option value="Equipe GT_Splice">Equipe GT_Splice</option>
+                  {state.team.map((m) => (
+                    <option key={m.id} value={m.name}>
+                      {m.name}
+                    </option>
+                  ))}
                 </select>
 
                 <select
@@ -844,15 +888,25 @@ export default function GTSpliceCommandCenter() {
                               {task.description}
                             </p>
 
-                            <div className="flex flex-wrap gap-1 pt-1">
-                              {task.assignees.map((person) => (
-                                <span
-                                  key={person}
-                                  className="text-[10px] bg-slate-800/90 text-slate-300 px-2 py-0.5 rounded"
-                                >
-                                  {person.split(' ')[0]}
-                                </span>
-                              ))}
+                            {/* RESPONSÁVEL / ASSUMIR TAREFA */}
+                            <div className="pt-1 flex items-center justify-between gap-1">
+                              <span className="text-[10px] text-slate-400">Resp:</span>
+                              <select
+                                aria-label={`Responsável por ${task.title}`}
+                                value={task.assignees[0] || 'A definir pelo grupo'}
+                                onChange={(e) =>
+                                  handleTaskAssigneeChange(task.id, e.target.value)
+                                }
+                                className="bg-[#12141D] text-[10px] text-cyan-300 px-2 py-0.5 rounded border border-[#2B3147] max-w-[170px] truncate"
+                              >
+                                <option value="A definir pelo grupo">A definir pelo grupo</option>
+                                <option value="Equipe GT_Splice">Equipe GT_Splice</option>
+                                {state.team.map((m) => (
+                                  <option key={m.id} value={m.name}>
+                                    {m.name}
+                                  </option>
+                                ))}
+                              </select>
                             </div>
 
                             <div className="pt-2 border-t border-[#232838]">
@@ -888,7 +942,7 @@ export default function GTSpliceCommandCenter() {
                         <th className="p-3.5">Entrega / Tarefa</th>
                         <th className="p-3.5">Fase</th>
                         <th className="p-3.5">Prioridade</th>
-                        <th className="p-3.5">Responsáveis</th>
+                        <th className="p-3.5">Responsável</th>
                         <th className="p-3.5">Status</th>
                         <th className="p-3.5 text-right">Ações</th>
                       </tr>
@@ -910,8 +964,23 @@ export default function GTSpliceCommandCenter() {
                               {PRIORITY_LABELS[task.priority].label}
                             </span>
                           </td>
-                          <td className="p-3.5 text-cyan-300">
-                            {task.assignees.map((a) => a.split(' ')[0]).join(', ')}
+                          <td className="p-3.5">
+                            <select
+                              aria-label={`Responsável por ${task.title}`}
+                              value={task.assignees[0] || 'A definir pelo grupo'}
+                              onChange={(e) =>
+                                handleTaskAssigneeChange(task.id, e.target.value)
+                              }
+                              className="bg-[#191C28] text-xs text-cyan-300 px-2.5 py-1.5 rounded-lg border border-[#2B3147]"
+                            >
+                              <option value="A definir pelo grupo">A definir pelo grupo</option>
+                              <option value="Equipe GT_Splice">Equipe GT_Splice</option>
+                              {state.team.map((m) => (
+                                <option key={m.id} value={m.name}>
+                                  {m.name}
+                                </option>
+                              ))}
+                            </select>
                           </td>
                           <td className="p-3.5">
                             <select
@@ -987,7 +1056,7 @@ export default function GTSpliceCommandCenter() {
                   <tr className="bg-[#171A26] text-slate-400 border-b border-[#1E2230]">
                     <th className="p-3.5">Ativo / Artefato</th>
                     <th className="p-3.5">Origem</th>
-                    <th className="p-3.5">Responsável</th>
+                    <th className="p-3.5">Responsável / Focal</th>
                     <th className="p-3.5">Uso Pretendido na Unity</th>
                     <th className="p-3.5">Status c/ Prof. Fred</th>
                   </tr>
@@ -1002,7 +1071,24 @@ export default function GTSpliceCommandCenter() {
                         </span>
                       </td>
                       <td className="p-3.5 text-slate-300">{item.origin}</td>
-                      <td className="p-3.5 text-cyan-300">{item.owner}</td>
+                      <td className="p-3.5">
+                        <select
+                          aria-label={`Responsável por ${item.name}`}
+                          value={item.owner}
+                          onChange={(e) =>
+                            handleInventoryOwnerChange(item.id, e.target.value)
+                          }
+                          className="bg-[#191C28] text-xs text-cyan-300 px-2.5 py-1.5 rounded-lg border border-[#2B3147]"
+                        >
+                          <option value="Equipe GT_Splice">Equipe GT_Splice</option>
+                          <option value="A definir pelo grupo">A definir pelo grupo</option>
+                          {state.team.map((m) => (
+                            <option key={m.id} value={m.name}>
+                              {m.name}
+                            </option>
+                          ))}
+                        </select>
+                      </td>
                       <td className="p-3.5 text-slate-300 max-w-xs">
                         {item.intendedUnityUse}
                       </td>
@@ -1239,7 +1325,7 @@ export default function GTSpliceCommandCenter() {
 
             <div className="bg-[#12141D] border border-[#1E2230] rounded-2xl p-5">
               <h3 className="text-base font-bold text-white mb-1">
-                Orçamento de Performance 3D & Polígonos (Frente Cosmo & André)
+                Orçamento de Performance 3D & Polígonos
               </h3>
               <p className="text-xs text-slate-400 mb-4">
                 Balanceamento entre qualidade visual (sombras, animações de carros/pedestres) e performance nos óculos de Realidade Mista.
@@ -1260,8 +1346,27 @@ export default function GTSpliceCommandCenter() {
                       <p className="text-xs text-slate-400 mt-1">{opt.targetMetric}</p>
                     </div>
 
-                    <div className="flex items-center justify-between pt-2 border-t border-[#232838]">
-                      <span className="text-xs text-slate-400">Focal: {opt.owner}</span>
+                    <div className="flex flex-wrap items-center justify-between gap-2 pt-2 border-t border-[#232838]">
+                      <div className="flex items-center gap-1.5">
+                        <span className="text-xs text-slate-400">Focal:</span>
+                        <select
+                          aria-label={`Responsável por ${opt.title}`}
+                          value={opt.owner}
+                          onChange={(e) =>
+                            handleOptimizationOwnerChange(opt.id, e.target.value)
+                          }
+                          className="bg-[#12141D] text-xs text-cyan-300 px-2 py-1 rounded border border-[#2B3147]"
+                        >
+                          <option value="Equipe GT_Splice">Equipe GT_Splice</option>
+                          <option value="A definir pelo grupo">A definir pelo grupo</option>
+                          {state.team.map((m) => (
+                            <option key={m.id} value={m.name}>
+                              {m.name}
+                            </option>
+                          ))}
+                        </select>
+                      </div>
+
                       <select
                         aria-label={`Status de otimização para ${opt.title}`}
                         value={opt.status}
@@ -1342,42 +1447,149 @@ export default function GTSpliceCommandCenter() {
         {/* TAB 5: EQUIPE, DOSSIÊ & DÚVIDAS */}
         {activeTab === 'EQUIPE_DOSSIE' && (
           <div className="space-y-6">
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-              {state.team.map((member) => (
-                <div
-                  key={member.id}
-                  className="bg-[#12141D] border border-[#1E2230] rounded-2xl p-5 flex flex-col justify-between"
-                >
-                  <div>
-                    <h4 className="text-base font-bold text-white">{member.name}</h4>
-                    <span className="text-xs text-cyan-400 block mt-0.5 mb-2">
-                      {member.role}
-                    </span>
-                    <p className="text-xs text-slate-400 leading-relaxed">
-                      {member.background}
-                    </p>
-                  </div>
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+              <div>
+                <h3 className="text-base font-bold text-white">
+                  Integrantes do GT_Splice Facens
+                </h3>
+                <p className="text-xs text-slate-400">
+                  Clique em Editar em qualquer card para personalizar sua função, foco e notas diretamente na interface.
+                </p>
+              </div>
+            </div>
 
-                  <div className="mt-4 flex flex-wrap items-center gap-3">
-                    {member.github && (
-                      <a
-                        href={member.github}
-                        target="_blank"
-                        rel="noreferrer"
-                        className="inline-flex items-center gap-1.5 text-xs text-cyan-300 hover:text-cyan-200 font-mono"
-                      >
-                        <ExternalLink className="w-3.5 h-3.5" />
-                        {member.github.replace('https://github.com/', '@')}
-                      </a>
-                    )}
-                    {member.email && (
-                      <span className="text-[11px] font-mono text-slate-400">
-                        {member.email}
-                      </span>
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+              {state.team.map((member) => {
+                const isEditing = editingMemberId === member.id;
+                return (
+                  <div
+                    key={member.id}
+                    className={`bg-[#12141D] border rounded-2xl p-5 flex flex-col justify-between transition ${
+                      isEditing ? 'border-cyan-500/60 ring-1 ring-cyan-500/30' : 'border-[#1E2230]'
+                    }`}
+                  >
+                    <div>
+                      <div className="flex items-start justify-between gap-2 mb-2">
+                        <h4 className="text-base font-bold text-white">{member.name}</h4>
+                        <button
+                          type="button"
+                          onClick={() => setEditingMemberId(isEditing ? null : member.id)}
+                          className={`flex items-center gap-1 text-[11px] px-2.5 py-1 rounded-lg border transition font-medium ${
+                            isEditing
+                              ? 'bg-cyan-500/20 text-cyan-300 border-cyan-500/40'
+                              : 'bg-[#181B26] text-slate-400 hover:text-cyan-300 border-[#262B3D]'
+                          }`}
+                        >
+                          {isEditing ? (
+                            <>
+                              <Check className="w-3.5 h-3.5" /> Concluir
+                            </>
+                          ) : (
+                            <>
+                              <Edit3 className="w-3.5 h-3.5" /> Editar
+                            </>
+                          )}
+                        </button>
+                      </div>
+
+                      {isEditing ? (
+                        <div className="space-y-3 pt-1">
+                          <div>
+                            <label className="block text-[10px] uppercase font-mono text-slate-400 mb-1">
+                              Função / Foco no Projeto
+                            </label>
+                            <input
+                              type="text"
+                              value={member.role}
+                              onChange={(e) =>
+                                handleUpdateTeamMember(member.id, { role: e.target.value })
+                              }
+                              placeholder="Ex: Integração Unity, Documentação, etc."
+                              className="w-full bg-[#181B26] border border-[#2B3147] rounded-lg px-2.5 py-1.5 text-xs text-white"
+                            />
+                          </div>
+
+                          <div>
+                            <label className="block text-[10px] uppercase font-mono text-slate-400 mb-1">
+                              Atuação, Notas & Preferências
+                            </label>
+                            <textarea
+                              rows={3}
+                              value={member.background}
+                              onChange={(e) =>
+                                handleUpdateTeamMember(member.id, { background: e.target.value })
+                              }
+                              placeholder="Descreva seu foco ou preferência no grupo..."
+                              className="w-full bg-[#181B26] border border-[#2B3147] rounded-lg px-2.5 py-1.5 text-xs text-white"
+                            />
+                          </div>
+
+                          <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                            <div>
+                              <label className="block text-[10px] uppercase font-mono text-slate-400 mb-1">
+                                GitHub
+                              </label>
+                              <input
+                                type="text"
+                                value={member.github || ''}
+                                onChange={(e) =>
+                                  handleUpdateTeamMember(member.id, { github: e.target.value })
+                                }
+                                placeholder="https://github.com/..."
+                                className="w-full bg-[#181B26] border border-[#2B3147] rounded-lg px-2.5 py-1.5 text-xs text-white"
+                              />
+                            </div>
+                            <div>
+                              <label className="block text-[10px] uppercase font-mono text-slate-400 mb-1">
+                                E-mail
+                              </label>
+                              <input
+                                type="email"
+                                value={member.email || ''}
+                                onChange={(e) =>
+                                  handleUpdateTeamMember(member.id, { email: e.target.value })
+                                }
+                                placeholder="nome@exemplo.com"
+                                className="w-full bg-[#181B26] border border-[#2B3147] rounded-lg px-2.5 py-1.5 text-xs text-white"
+                              />
+                            </div>
+                          </div>
+                        </div>
+                      ) : (
+                        <>
+                          <span className="text-xs text-cyan-400 block mt-0.5 mb-2 font-medium">
+                            {member.role}
+                          </span>
+                          <p className="text-xs text-slate-400 leading-relaxed">
+                            {member.background}
+                          </p>
+                        </>
+                      )}
+                    </div>
+
+                    {!isEditing && (
+                      <div className="mt-4 flex flex-wrap items-center gap-3 pt-2 border-t border-[#1A1E2B]">
+                        {member.github && (
+                          <a
+                            href={member.github}
+                            target="_blank"
+                            rel="noreferrer"
+                            className="inline-flex items-center gap-1.5 text-xs text-cyan-300 hover:text-cyan-200 font-mono"
+                          >
+                            <ExternalLink className="w-3.5 h-3.5" />
+                            {member.github.replace('https://github.com/', '@')}
+                          </a>
+                        )}
+                        {member.email && (
+                          <span className="text-[11px] font-mono text-slate-400">
+                            {member.email}
+                          </span>
+                        )}
+                      </div>
                     )}
                   </div>
-                </div>
-              ))}
+                );
+              })}
             </div>
 
             {/* CHECKLIST DE PERGUNTAS PARA VALIDAÇÃO */}
@@ -1509,6 +1721,8 @@ export default function GTSpliceCommandCenter() {
               onChange={(e) => setNewTaskAssignee(e.target.value)}
               className="w-full bg-[#191C28] border border-[#2B3147] rounded-lg px-2.5 py-2 text-white"
             >
+              <option value="A definir pelo grupo">A definir pelo grupo</option>
+              <option value="Equipe GT_Splice">Equipe GT_Splice</option>
               {state.team.map((m) => (
                 <option key={m.id} value={m.name}>
                   {m.name}
@@ -1587,6 +1801,8 @@ export default function GTSpliceCommandCenter() {
                 onChange={(e) => setNewAssetOwner(e.target.value)}
                 className="w-full bg-[#191C28] border border-[#2B3147] rounded-lg px-2.5 py-2 text-white"
               >
+                <option value="Equipe GT_Splice">Equipe GT_Splice</option>
+                <option value="A definir pelo grupo">A definir pelo grupo</option>
                 {state.team.map((m) => (
                   <option key={m.id} value={m.name}>
                     {m.name}

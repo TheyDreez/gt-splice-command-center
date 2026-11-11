@@ -4,38 +4,38 @@ export const INITIAL_PROJECT_STATE: ProjectState = {
   lastUpdated: new Date().toISOString(),
   team: [
     {
-      id: 'andre',
-      name: 'André Rogério da Silva Filho',
-      role: 'Arquitetura, Integração Web/3D & Repositórios (Admin)',
-      github: 'https://github.com/TheyDreez',
-      background: 'Pesquisador LIGA/Facens, Arquitetura Digital Shadow 3D, Full-Stack & Hardware/Câmeras (ref. Comlaser TPCAM-H20S).'
-    },
-    {
       id: 'ana',
       name: 'Ana Paula Batista',
-      role: 'Gestão, Documentação, Alinhamento Teams & Pesquisa',
+      role: 'Integrante GT_Splice',
       github: 'https://github.com/abatistaa',
       email: 'anapcb1308@gmail.com',
-      background: 'Criadora do GT_Splice no Teams e WhatsApp; participou da 1ª capacitação Splice no 1º semestre.'
+      background: 'Atuação e foco a definir pelo grupo'
     },
     {
-      id: 'helton',
-      name: 'Helton Rosa da Silva Abadia',
-      role: 'Desenvolvimento, Integração & Apoio Técnico',
-      github: 'https://github.com/heltonrsnet-cpu',
-      background: 'Apresentação dos 4 desafios TIC 51; colaborador no projeto Geo Capital Engine v3 (Omni-EcoRescue).'
-    },
-    {
-      id: 'vania',
-      name: 'Vânia',
-      role: 'Especialista Capacitação Splice & App Mobilidade',
-      background: 'Autora do módulo de aplicativo no projeto SIGABEM (Central de Controle de Mobilidade / Malha Viva VR no 1º semestre).'
+      id: 'andre',
+      name: 'André Rogério da Silva Filho',
+      role: 'Integrante GT_Splice',
+      github: 'https://github.com/TheyDreez',
+      background: 'Atuação e foco a definir pelo grupo'
     },
     {
       id: 'cosmo',
       name: 'Cosmo',
-      role: 'Especialista em Game Dev, Unity & Otimização 3D',
-      background: '25+ anos de experiência em jogos e otimização de polígonos/sombras; empresa própria na área de reconhecimento e detecção.'
+      role: 'Integrante GT_Splice',
+      background: 'Atuação e foco a definir pelo grupo'
+    },
+    {
+      id: 'helton',
+      name: 'Helton Rosa da Silva Abadia',
+      role: 'Integrante GT_Splice',
+      github: 'https://github.com/heltonrsnet-cpu',
+      background: 'Atuação e foco a definir pelo grupo'
+    },
+    {
+      id: 'vania',
+      name: 'Vânia',
+      role: 'Integrante GT_Splice',
+      background: 'Atuação e foco a definir pelo grupo'
     }
   ],
   tasks: [
@@ -47,7 +47,7 @@ export const INITIAL_PROJECT_STATE: ProjectState = {
       phase: 'FASE_0',
       status: 'CONCLUIDO',
       priority: 'CRITICA',
-      assignees: ['Ana Paula Batista'],
+      assignees: ['A definir pelo grupo'],
       updatedAt: '2026-11-09T11:16:00Z'
     },
     {
@@ -57,7 +57,7 @@ export const INITIAL_PROJECT_STATE: ProjectState = {
       phase: 'FASE_0',
       status: 'EM_ANDAMENTO',
       priority: 'CRITICA',
-      assignees: ['Ana Paula Batista'],
+      assignees: ['A definir pelo grupo'],
       updatedAt: '2026-11-10T18:00:00Z'
     },
     {
@@ -67,7 +67,7 @@ export const INITIAL_PROJECT_STATE: ProjectState = {
       phase: 'FASE_0',
       status: 'CONCLUIDO',
       priority: 'OBRIGATORIA_JAN',
-      assignees: ['Ana Paula Batista', 'André Rogério da Silva Filho'],
+      assignees: ['A definir pelo grupo'],
       updatedAt: '2026-11-10T19:20:00Z'
     },
     {
@@ -77,7 +77,7 @@ export const INITIAL_PROJECT_STATE: ProjectState = {
       phase: 'FASE_0',
       status: 'EM_ANDAMENTO',
       priority: 'CRITICA',
-      assignees: ['André Rogério da Silva Filho', 'Vânia', 'Ana Paula Batista'],
+      assignees: ['A definir pelo grupo'],
       updatedAt: '2026-11-10T19:30:00Z'
     },
     {
@@ -87,7 +87,7 @@ export const INITIAL_PROJECT_STATE: ProjectState = {
       phase: 'FASE_0',
       status: 'VALIDACAO_FRED',
       priority: 'CRITICA',
-      assignees: ['André Rogério da Silva Filho', 'Cosmo', 'Vânia'],
+      assignees: ['A definir pelo grupo'],
       updatedAt: '2026-11-10T20:00:00Z'
     },
     {
@@ -97,7 +97,7 @@ export const INITIAL_PROJECT_STATE: ProjectState = {
       phase: 'FASE_0',
       status: 'BACKLOG',
       priority: 'CRITICA',
-      assignees: ['André Rogério da Silva Filho', 'Ana Paula Batista', 'Helton Rosa da Silva Abadia', 'Vânia', 'Cosmo'],
+      assignees: ['A definir pelo grupo'],
       updatedAt: '2026-11-10T20:00:00Z'
     },
 
@@ -109,7 +109,7 @@ export const INITIAL_PROJECT_STATE: ProjectState = {
       phase: 'FASE_1',
       status: 'EM_ANDAMENTO',
       priority: 'OBRIGATORIA_JAN',
-      assignees: ['André Rogério da Silva Filho', 'Ana Paula Batista', 'Helton Rosa da Silva Abadia', 'Vânia', 'Cosmo'],
+      assignees: ['A definir pelo grupo'],
       updatedAt: '2026-11-10T21:00:00Z'
     },
     {
@@ -119,7 +119,7 @@ export const INITIAL_PROJECT_STATE: ProjectState = {
       phase: 'FASE_1',
       status: 'BACKLOG',
       priority: 'CRITICA',
-      assignees: ['Cosmo', 'André Rogério da Silva Filho'],
+      assignees: ['A definir pelo grupo'],
       updatedAt: '2026-11-10T21:00:00Z'
     },
     {
@@ -129,7 +129,7 @@ export const INITIAL_PROJECT_STATE: ProjectState = {
       phase: 'FASE_1',
       status: 'BACKLOG',
       priority: 'OBRIGATORIA_JAN',
-      assignees: ['André Rogério da Silva Filho', 'Ana Paula Batista', 'Vânia'],
+      assignees: ['A definir pelo grupo'],
       updatedAt: '2026-11-10T21:00:00Z'
     },
     {
@@ -139,7 +139,7 @@ export const INITIAL_PROJECT_STATE: ProjectState = {
       phase: 'FASE_1',
       status: 'BACKLOG',
       priority: 'OBRIGATORIA_JAN',
-      assignees: ['André Rogério da Silva Filho', 'Cosmo', 'Helton Rosa da Silva Abadia'],
+      assignees: ['A definir pelo grupo'],
       updatedAt: '2026-11-10T21:00:00Z'
     },
     {
@@ -149,7 +149,7 @@ export const INITIAL_PROJECT_STATE: ProjectState = {
       phase: 'FASE_1',
       status: 'BACKLOG',
       priority: 'CRITICA',
-      assignees: ['André Rogério da Silva Filho', 'Cosmo'],
+      assignees: ['A definir pelo grupo'],
       updatedAt: '2026-11-10T21:00:00Z'
     },
     {
@@ -159,7 +159,7 @@ export const INITIAL_PROJECT_STATE: ProjectState = {
       phase: 'FASE_1',
       status: 'BACKLOG',
       priority: 'DESEJAVEL_STRETCH',
-      assignees: ['Cosmo'],
+      assignees: ['A definir pelo grupo'],
       updatedAt: '2026-11-10T21:00:00Z'
     },
     {
@@ -169,7 +169,7 @@ export const INITIAL_PROJECT_STATE: ProjectState = {
       phase: 'FASE_1',
       status: 'BACKLOG',
       priority: 'DESEJAVEL_STRETCH',
-      assignees: ['Cosmo', 'Helton Rosa da Silva Abadia'],
+      assignees: ['A definir pelo grupo'],
       updatedAt: '2026-11-10T21:00:00Z'
     },
 
@@ -181,17 +181,17 @@ export const INITIAL_PROJECT_STATE: ProjectState = {
       phase: 'FASE_2',
       status: 'BACKLOG',
       priority: 'ETAPA_2',
-      assignees: ['André Rogério da Silva Filho', 'Helton Rosa da Silva Abadia'],
+      assignees: ['A definir pelo grupo'],
       updatedAt: '2026-11-10T21:00:00Z'
     },
     {
       id: 't-15',
       title: 'Integrar IA para extração de atributos (vestimenta, idade e gênero estimado)',
-      description: 'Com apoio do professor de IA e expertise do Cosmo/André, enriquecer a imagem capturada com metadados analíticos.',
+      description: 'Com apoio do professor de IA e expertise do grupo, enriquecer a imagem capturada com metadados analíticos.',
       phase: 'FASE_2',
       status: 'BACKLOG',
       priority: 'ETAPA_2',
-      assignees: ['Cosmo', 'André Rogério da Silva Filho', 'Helton Rosa da Silva Abadia'],
+      assignees: ['A definir pelo grupo'],
       updatedAt: '2026-11-10T21:00:00Z'
     },
     {
@@ -201,7 +201,7 @@ export const INITIAL_PROJECT_STATE: ProjectState = {
       phase: 'FASE_2',
       status: 'BACKLOG',
       priority: 'ETAPA_2',
-      assignees: ['André Rogério da Silva Filho', 'Ana Paula Batista', 'Helton Rosa da Silva Abadia'],
+      assignees: ['A definir pelo grupo'],
       updatedAt: '2026-11-10T21:00:00Z'
     }
   ],
@@ -210,7 +210,7 @@ export const INITIAL_PROJECT_STATE: ProjectState = {
       id: 'inv-1',
       name: 'SIGABEM: Central de Controle de Mobilidade (App)',
       origin: '1ª Capacitação Splice (1º Semestre) - PDF/PPTX',
-      owner: 'Vânia / Ana Paula',
+      owner: 'Equipe GT_Splice',
       intendedUnityUse: 'Referência de regras de negócio, UI de mobilidade e fluxos de alerta para o painel das câmeras.',
       validationStatus: 'EM_ANALISE',
       notes: 'Arquivos SIGABEM_MalhaViva_VR.pptx e PDF compartilhados no grupo em 10/11.'
@@ -219,7 +219,7 @@ export const INITIAL_PROJECT_STATE: ProjectState = {
       id: 'inv-2',
       name: 'Módulo Malha Viva VR + Sensores 5G Real-Time',
       origin: 'GitHub Tomita & Gabriel (1ª Capacitação Splice)',
-      owner: 'Vânia (Ponte com repositório)',
+      owner: 'Equipe GT_Splice',
       intendedUnityUse: 'Avaliar reaproveitamento dos scripts de conexão em tempo real e visualização VR na Unity.',
       validationStatus: 'PENDENTE',
       notes: 'Extrair link do GitHub nos PDFs enviados pela Vânia e validar com o Prof. Fred.'
@@ -228,7 +228,7 @@ export const INITIAL_PROJECT_STATE: ProjectState = {
       id: 'inv-3',
       name: 'Maquete 3D do Campus Facens (Base LIGA)',
       origin: 'Laboratório LIGA / Facens',
-      owner: 'Prof. Fred / Equipe LIGA',
+      owner: 'Equipe GT_Splice',
       intendedUnityUse: 'Cena base na Unity que será recortada (foco no viário) e otimizada (redução de árvores).',
       validationStatus: 'COMPATIVEL',
       notes: 'Atualmente focada nos prédios e sem sombras; mudaremos o destaque para postes e câmeras.'
@@ -237,7 +237,7 @@ export const INITIAL_PROJECT_STATE: ProjectState = {
       id: 'inv-4',
       name: 'Geo Capital Engine v3 (Omni-EcoRescue)',
       origin: 'GitHub LeonardoGMendoza/aplicativo-geo-capital-engine-v3',
-      owner: 'Helton Abadia',
+      owner: 'Equipe GT_Splice',
       intendedUnityUse: 'Referência de estruturação de camadas geoespaciais e apresentação executiva.',
       validationStatus: 'EM_ANALISE',
       notes: 'Compartilhado pelo Helton em 10/11.'
@@ -245,8 +245,8 @@ export const INITIAL_PROJECT_STATE: ProjectState = {
     {
       id: 'inv-5',
       name: 'Referência de Hardware Óptico/PTZ (Comlaser TPCAM-H20S)',
-      origin: 'Acervo Técnico André (Projeto Coreia / Licitações)',
-      owner: 'André Filho',
+      origin: 'Acervo Técnico (Projeto Coreia / Licitações)',
+      owner: 'Equipe GT_Splice',
       intendedUnityUse: 'Benchmark de especificações de câmera e telemetria óptica para modelagem dos pontos.',
       validationStatus: 'COMPATIVEL',
       notes: 'Link comlaser.net enviado em 09/11.'
@@ -255,7 +255,7 @@ export const INITIAL_PROJECT_STATE: ProjectState = {
       id: 'inv-6',
       name: 'Dossiê Consolidado TIC 51 (Arquitetura Digital Shadow)',
       origin: 'Fase 1 Residência TIC 51 (03/11/2026)',
-      owner: 'André, Ana Paula e Helton',
+      owner: 'Equipe GT_Splice',
       intendedUnityUse: 'Fundamentação teórica (NIST/ISO 23247), distinção Digital Shadow vs. Twin e requisitos LGPD.',
       validationStatus: 'COMPATIVEL',
       notes: '45 URLs auditadas e validadas.'
@@ -267,7 +267,7 @@ export const INITIAL_PROJECT_STATE: ProjectState = {
       category: 'POLIGONOS',
       title: 'Poda de árvores do entorno do campus',
       targetMetric: 'Reduzir draw calls e manter 60+ FPS no Browser/Óculos MR',
-      owner: 'Cosmo',
+      owner: 'Equipe GT_Splice',
       status: 'PENDENTE',
       impactLevel: 'ALTO'
     },
@@ -276,7 +276,7 @@ export const INITIAL_PROJECT_STATE: ProjectState = {
       category: 'POLIGONOS',
       title: 'Recorte geométrico do terreno mantendo foco no sistema viário',
       targetMetric: 'Eliminar malhas periféricas fora do campo de visão das câmeras',
-      owner: 'Cosmo / André',
+      owner: 'Equipe GT_Splice',
       status: 'PENDENTE',
       impactLevel: 'ALTO'
     },
@@ -285,7 +285,7 @@ export const INITIAL_PROJECT_STATE: ProjectState = {
       category: 'SOMBRAS',
       title: 'Implementação de Lightmaps / Sombras otimizadas',
       targetMetric: 'Adicionar profundidade visual sem estourar orçamento de GPU no WebXR',
-      owner: 'Cosmo',
+      owner: 'Equipe GT_Splice',
       status: 'TESTANDO_D29',
       impactLevel: 'ALTO'
     },
@@ -294,7 +294,7 @@ export const INITIAL_PROJECT_STATE: ProjectState = {
       category: 'ANIMACAO_AUDIO',
       title: 'Waypoints de veículos, pedestres e som ambiente no viário',
       targetMetric: 'Simulação leve por instanciamento sem física pesada',
-      owner: 'Cosmo / Helton',
+      owner: 'Equipe GT_Splice',
       status: 'PENDENTE',
       impactLevel: 'MEDIO'
     }
